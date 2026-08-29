@@ -40,6 +40,7 @@
 
   /* Ритм */
   --pad: clamp(1.25rem, 5vw, 4rem);
+  --header-h: 68px;
   --radius: 18px;
 
   /* Фактура тёмных панелей: тонкие диагональные штрихи */
@@ -330,12 +331,12 @@ section { padding-block: clamp(3.75rem, 8.5vw, 6.5rem); }
 .nav-links {
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 2vw, 1.75rem);
+  gap: clamp(.8rem, 1.5vw, 1.75rem);
 }
 
 .nav-links a {
   text-decoration: none;
-  font-size: .94rem;
+  font-size: clamp(.86rem, 1.05vw, .94rem);
   color: var(--ink-2);
   transition: color .2s ease;
 }
@@ -374,28 +375,32 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 
 /* Мобильное меню */
 @media (max-width: 979px) {
-  /* backdrop-filter делает шапку containing block для fixed —
-     на время открытого меню отключаем, чтобы оверлей считался от вьюпорта */
-  body.nav-open .header { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--ground); }
-
+  /* Панель открывается ПОД шапкой, а не поверх неё — кнопка бургера
+     остаётся доступной для закрытия при любом порядке наложения.
+     Высота задана явно: из-за backdrop-filter шапка может быть containing
+     block для fixed, тогда bottom: 0 схлопнул бы панель. */
   .nav {
     position: fixed;
-    inset: 0;
+    top: calc(var(--header-h) + 1px);
+    left: 0;
+    right: 0;
+    height: calc(100dvh - var(--header-h) - 1px);
     z-index: 1;
-    height: 100dvh;
     background: var(--ground);
-    padding: 92px var(--pad) 2.5rem;
+    padding: 1.25rem var(--pad) 2.5rem;
     display: grid;
     align-content: start;
     gap: .25rem;
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transform: translateY(-8px);
     transition: opacity .25s ease, transform .25s ease, visibility .25s;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  body.nav-open .nav { opacity: 1; visibility: visible; transform: none; }
+  body.nav-open .nav { opacity: 1; visibility: visible; pointer-events: auto; transform: none; }
   body.nav-open { overflow: hidden; }
 
   .nav-links {
@@ -418,7 +423,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 
 @media (min-width: 980px) {
   .burger { display: none; }
-  .nav { display: flex; align-items: center; gap: 1.75rem; }
+  .nav { display: flex; align-items: center; gap: clamp(.9rem, 1.6vw, 1.75rem); }
 }
 
 /* ---------- Герой ---------- */
