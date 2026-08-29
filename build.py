@@ -22,7 +22,7 @@ LOGOS = {"brand-mark": "logo-128.png", "hero-logo": "logo-256.png"}
 HEAD = """<title>{title}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700&display=swap">
 <script>document.documentElement.classList.add("js");</script>
 <style>
 {css}

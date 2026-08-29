@@ -151,12 +151,18 @@ h1, h2, h3 {
   line-height: 1.06;
 }
 
-h1 { font-size: clamp(1.8rem, 6.6vw, 4.5rem); line-height: 1.06; letter-spacing: -0.032em; }
+/* Заголовок первого экрана — антиква Playfair: буквы уже гротеска, поэтому
+   в строку помещается больше слов, и выглядит мягче при крупном кегле. */
+h1 {
+  font-family: "Playfair Display", "Golos Text", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 7.4vw, 4.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
 
-/* На телефоне крупный заголовок рвётся по одному слову в строку — делаем
-   его мельче и легче, чтобы в строку помещалось два-три слова. */
 @media (max-width: 620px) {
-  h1 { font-weight: 700; line-height: 1.14; letter-spacing: -0.02em; }
+  h1 { line-height: 1.18; letter-spacing: -0.005em; }
 }
 h2 { font-size: clamp(1.9rem, 4.6vw, 3rem); letter-spacing: -0.032em; }
 h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); font-weight: 700; letter-spacing: -0.012em; }
