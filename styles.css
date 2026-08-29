@@ -467,7 +467,9 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 .hero-photo {
   aspect-ratio: 4 / 5;
   border-radius: calc(var(--radius) + 14px);
+  /* Фото интерьера; если файла нет — остаётся бежевый градиент */
   background:
+    url("hero.jpg") center 42% / cover no-repeat,
     linear-gradient(150deg, var(--tint), var(--surface-2) 55%, var(--tint)),
     var(--surface-2);
   box-shadow: 0 28px 90px rgba(0, 0, 0, .16);

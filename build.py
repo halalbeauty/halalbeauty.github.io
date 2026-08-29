@@ -35,8 +35,21 @@ def read(name):
 
 
 def data_uri(name):
+    mime = "image/jpeg" if name.lower().endswith((".jpg", ".jpeg")) else "image/png"
     with open(os.path.join(ROOT, name), "rb") as f:
-        return "data:image/png;base64," + base64.b64encode(f.read()).decode()
+        return "data:%s;base64," % mime + base64.b64encode(f.read()).decode()
+
+
+def inline_css_images(css):
+    """Фоновые картинки в CSS вшиваем в data-URI — артефакт не видит соседние файлы."""
+
+    def sub(m):
+        name = m.group(1)
+        if not os.path.exists(os.path.join(ROOT, name)):
+            return "none"  # файла нет — остаётся градиент под ним
+        return 'url("%s")' % data_uri(name)
+
+    return re.sub(r"url\(\"([\w.-]+\.(?:png|jpe?g))\"\)", sub, css)
 
 
 def inline_logos(html):
@@ -55,7 +68,7 @@ def main():
     body = html.split("<!-- BUILD:START -->")[1].split("<!-- BUILD:END -->")[0]
 
     page = (
-        HEAD.format(title=TITLE, css=read("styles.css"))
+        HEAD.format(title=TITLE, css=inline_css_images(read("styles.css")))
         + inline_logos(body)
         + "<script>\n"
         + read("script.js")
