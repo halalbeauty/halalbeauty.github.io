@@ -24,9 +24,10 @@
   });
 
   // Меню сбрасывается, если экран стал широким при открытом меню
-  window.matchMedia('(min-width: 980px)').addEventListener('change', function (e) {
-    if (e.matches) setNav(false);
-  });
+  var wide = window.matchMedia('(min-width: 980px)');
+  var onWide = function (e) { if (e.matches) setNav(false); };
+  if (wide.addEventListener) wide.addEventListener('change', onWide);
+  else if (wide.addListener) wide.addListener(onWide); // Safari < 14
 
   /* ---------- Линия под шапкой при прокрутке ---------- */
   var header = document.querySelector('.header');
