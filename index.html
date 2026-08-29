@@ -1,0 +1,1167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Halal Beauty — женский салон красоты в Алматы</title>
+<meta name="description" content="Женский салон красоты Halal Beauty в Алматы: лазерная эпиляция, SPA, массаж, маникюр, ресницы и брови, хиджама. Только женский коллектив, 5 лет работы, 60 000+ клиенток.">
+<meta name="theme-color" content="#F5F5F7">
+
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="logo.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<!-- BUILD:START -->
+
+<header class="header" id="top">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top">
+      <img class="brand-mark" src="logo.png" width="512" height="512" alt="Halal Beauty">
+      <span>Halal <em>Beauty</em></span>
+    </a>
+
+    <button class="burger" type="button" aria-label="Меню" aria-expanded="false" aria-controls="nav">
+      <i></i><i></i><i></i>
+    </button>
+
+    <nav class="nav" id="nav">
+      <ul class="nav-links">
+        <li><a href="#services">Услуги</a></li>
+        <li><a href="#trust">О салоне</a></li>
+        <li><a href="#training">Обучение</a></li>
+        <li><a href="#works">Работы</a></li>
+        <li><a href="#reviews">Отзывы</a></li>
+        <li><a href="#contacts">Контакты</a></li>
+      </ul>
+      <a class="btn btn-primary" href="https://wa.me/77074040470" target="_blank" rel="noopener">Записаться</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ---------- Первый экран ---------- -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy reveal">
+        <img class="hero-logo" src="logo.png" width="512" height="512" alt="Halal Beauty">
+        <p class="eyebrow">Halal Beauty</p>
+        <h1>Пространство, созданное женщинами&nbsp;— для женщин.</h1>
+        <p class="hero-lead">
+          Салон красоты с особым вниманием к женскому комфорту, приватности и гармонии.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://wa.me/77074040470" target="_blank" rel="noopener">Записаться</a>
+          <a class="btn btn-ghost" href="#services">Открыть прайс</a>
+          <a class="btn btn-plain" href="https://2gis.kz/almaty/geo/70000001045331437">Посмотреть на 2GIS</a>
+        </div>
+      </div>
+
+      <!-- Замените на фото интерьера: <img src="..." alt="Интерьер салона" loading="lazy"> -->
+      <div class="hero-frame reveal">
+        <div class="hero-photo"></div>
+
+        <aside class="hero-glass">
+          <h2>Работаем ежедневно</h2>
+          <ul class="glass-lines">
+            <li><span>Часы</span><b>09:00 — 20:00</b></li>
+            <li><span>Адрес</span><b>Розыбакиева 289/1</b></li>
+            <li><span>Запись</span><b>+7 707 404 04 70</b></li>
+          </ul>
+          <small>По предварительной записи.</small>
+        </aside>
+      </div>
+
+      <ul class="hero-facts reveal">
+        <li><b>5 лет</b><span>нам доверяют с 2021 года</span></li>
+        <li><b>60 000+</b><span>довольных клиенток</span></li>
+        <li><b>4,9</b><span>рейтинг в 2ГИС, 1716 отзывов</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ---------- Услуги ---------- -->
+  <section id="services">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div>
+          <p class="eyebrow">Прайс-лист</p>
+          <h2>Услуги и цены</h2>
+        </div>
+        <p class="lead">
+          Полный уход в одном месте — от SPA-комплексов и лазерной эпиляции до косметологии
+          и хиджамы.
+        </p>
+      </div>
+
+      <div class="cat-nav reveal" role="tablist" aria-label="Категории услуг">
+        <button type="button" role="tab" id="tab-spa" aria-controls="panel-spa" aria-selected="true">SPA-комплексы</button>
+        <button type="button" role="tab" id="tab-headspa" aria-controls="panel-headspa" aria-selected="false">Chinese Head SPA</button>
+        <button type="button" role="tab" id="tab-massage" aria-controls="panel-massage" aria-selected="false">Массаж</button>
+        <button type="button" role="tab" id="tab-figure" aria-controls="panel-figure" aria-selected="false">Коррекция фигуры</button>
+        <button type="button" role="tab" id="tab-laser" aria-controls="panel-laser" aria-selected="false">Лазерная эпиляция</button>
+        <button type="button" role="tab" id="tab-depil" aria-controls="panel-depil" aria-selected="false">Депиляция</button>
+        <button type="button" role="tab" id="tab-hands" aria-controls="panel-hands" aria-selected="false">Руки и ноги</button>
+        <button type="button" role="tab" id="tab-lashes" aria-controls="panel-lashes" aria-selected="false">Ресницы и брови</button>
+        <button type="button" role="tab" id="tab-hair" aria-controls="panel-hair" aria-selected="false">Волосы</button>
+        <button type="button" role="tab" id="tab-cosmo" aria-controls="panel-cosmo" aria-selected="false">Косметология и хиджама</button>
+        <button type="button" role="tab" id="tab-other" aria-controls="panel-other" aria-selected="false">Хна, макияж, пирсинг</button>
+      </div>
+
+      <div class="menu cat-panel" id="panel-spa" role="tabpanel" aria-labelledby="tab-spa">
+        <div class="menu-group split">
+          <h3>Комплексные программы</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Восстановление после родов<small>Фитобочка с травами, солевое скрабирование, массаж 40 мин, скраб лица, компресс, чайная церемония · 2 ч</small></span>
+              <span class="dots"></span><span class="price">37 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">День с мамой<small>Кедровая бочка на двоих, пилинг тела, скрабирование, скраб лица, relax-массаж 60 мин, чайная церемония · 2 ч</small></span>
+              <span class="dots"></span><span class="price">57 800 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Кокосовая лагуна<small>Фитобочка, пилинг рукавицей кесе, пилинг кокосовой стружкой, кокосово-шоколадная маска, массаж 40 мин · 2 ч 30 мин</small></span>
+              <span class="dots"></span><span class="price">61 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">De Luxe<small>Кедровая бочка, шлифовка кесе, пилинг головы, скраб, relax-массаж 60 мин, массаж лица с альгинатной маской · 3 ч 30 мин</small></span>
+              <span class="dots"></span><span class="price">58 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Halal Shine<small>Кедровая бочка, шлифовка кесе, relax-массаж 60 мин, маска на всё тело, скраб для лица · 2 ч 30 мин</small></span>
+              <span class="dots"></span><span class="price">50 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Перезагрузка<small>Фитобочка, пилинг кесе, душ, японский массаж лица, пенный массаж головы, уход за лицом и волосами, массаж тела 40 мин · 2 ч</small></span>
+              <span class="dots"></span><span class="price">40 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Восстановление после тренировки<small>Фитобочка с травами, солевой пилинг, relax-массаж 40 мин · 1 ч 30 мин</small></span>
+              <span class="dots"></span><span class="price">27 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Девичник<small>Кедровая бочка, пилинг кесе, скраб и relax-массаж 40 мин — на троих · 4 ч</small></span>
+              <span class="dots"></span><span class="price">109 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group split">
+          <h3>Сеты</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Сет «Wow тело»<small>Кедровая бочка, пилинг кесе, душ, вибромассаж, прессотерапия, чайная церемония · 120 мин</small></span>
+              <span class="dots"></span><span class="price">38 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Сет «Идеальный силуэт»<small>Для двоих: кедровая бочка, солевой пилинг, лечебный массаж, LPG-массаж · 100 мин</small></span>
+              <span class="dots"></span><span class="price">64 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Сет «Чистота»<small>Кедровая бочка, пилинг кесе, кофейный или солевой скраб, помывка головы, мыльный массаж, шейно-воротниковый массаж · 2,5 ч</small></span>
+              <span class="dots"></span><span class="price">55 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Сет «Полное расслабление»<small>Кедровая бочка, массаж тела 40 мин, массаж лица и головы, чайная церемония · 120 мин</small></span>
+              <span class="dots"></span><span class="price">30 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group split">
+          <h3>Отдельные процедуры</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Чайная церемония</span>
+              <span class="dots"></span><span class="price">2 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Мойка волос</span>
+              <span class="dots"></span><span class="price">5 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Увлажнение тела эфирными маслами</span>
+              <span class="dots"></span><span class="price">5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Распаривание в кедровой бочке</span>
+              <span class="dots"></span><span class="price">7 700 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Кофейный пилинг</span>
+              <span class="dots"></span><span class="price">7 700 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Мыльный массаж тела</span>
+              <span class="dots"></span><span class="price">10 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Пилинг рукавицей кесе</span>
+              <span class="dots"></span><span class="price">10 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-headspa" role="tabpanel" aria-labelledby="tab-headspa" hidden>
+        <div class="menu-group split">
+          <h3>Комплексы</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Обновление<small>Японский массаж лица, пенный массаж головы, уход за волосами, мыльный массаж ШВЗ, уход за лицом, лечебный пар · 1 ч 30 мин</small></span>
+              <span class="dots"></span><span class="price">18 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Relax<small>Точечный массаж рук и ног с эфирным маслом, японский массаж лица, пенный массаж головы, уход за волосами и лицом, лечебный пар · 2 ч</small></span>
+              <span class="dots"></span><span class="price">25 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Эйфория<small>Relax-массаж тела 60 мин, пенный массаж головы, витаминный комплекс для волос, массаж лица с увлажняющей маской 30 мин, лечебный пар · 2 ч 30 мин</small></span>
+              <span class="dots"></span><span class="price">37 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-massage" role="tabpanel" aria-labelledby="tab-massage" hidden>
+        <div class="menu-group split">
+          <h3>Массаж</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Массаж головы</span>
+              <span class="dots"></span><span class="price">9 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Массаж ног и ступней</span>
+              <span class="dots"></span><span class="price">9 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Шейно-воротниковая зона и спина<small>30 минут</small></span>
+              <span class="dots"></span><span class="price">9 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Массаж лица<small>30 минут</small></span>
+              <span class="dots"></span><span class="price">11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Массаж для беременных<small>40 минут</small></span>
+              <span class="dots"></span><span class="price">13 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Скульптурный массаж</span>
+              <span class="dots"></span><span class="price">16 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Relax-массаж<small>60 минут</small></span>
+              <span class="dots"></span><span class="price">17 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Стоун-терапия<small>Массаж горячими камнями, 60 минут</small></span>
+              <span class="dots"></span><span class="price">17 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Точечный массаж</span>
+              <span class="dots"></span><span class="price">17 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Комбо: тело и лицо<small>1 час 20 минут</small></span>
+              <span class="dots"></span><span class="price">20 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Огненный массаж<small>30 минут</small></span>
+              <span class="dots"></span><span class="price">20 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лечебный массаж<small>60 минут</small></span>
+              <span class="dots"></span><span class="price">20 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Антицеллюлитный массаж<small>60 минут</small></span>
+              <span class="dots"></span><span class="price">20 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Мануальная терапия</span>
+              <span class="dots"></span><span class="price">20 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-figure" role="tabpanel" aria-labelledby="tab-figure" hidden>
+        <div class="menu-group split">
+          <h3>Аппаратные процедуры</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Кавитация</span>
+              <span class="dots"></span><span class="price">13 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лимфодренажный вибромассаж, 1 зона</span>
+              <span class="dots"></span><span class="price">11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лимфодренажный вибромассаж, всё тело</span>
+              <span class="dots"></span><span class="price">22 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">LPG-эндермология, 1 зона</span>
+              <span class="dots"></span><span class="price">11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">LPG-эндермология, всё тело</span>
+              <span class="dots"></span><span class="price">22 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Прессотерапия с ИК</span>
+              <span class="dots"></span><span class="price">8 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Вакуумный массаж</span>
+              <span class="dots"></span><span class="price">11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">RF-лифтинг тела</span>
+              <span class="dots"></span><span class="price">16 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Премиум антиотёк</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">1 сеанс<small>Прессотерапия с подогревом</small></span>
+              <span class="dots"></span><span class="price">8 800 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">5 сеансов</span>
+              <span class="dots"></span><span class="price">39 600 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">10 сеансов</span>
+              <span class="dots"></span><span class="price">79 200 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Антицеллюлитный детокс</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">1 сеанс<small>Вибромассаж и прессотерапия, LPG можно заменить через сеанс</small></span>
+              <span class="dots"></span><span class="price">19 800 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">5 сеансов<small>2 прессо + 5 вибро</small></span>
+              <span class="dots"></span><span class="price">58 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">10 сеансов<small>5 прессо + 10 вибро</small></span>
+              <span class="dots"></span><span class="price">123 200 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>«Минус объёмы VIP»</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">1 процедура<small>Дренажный вибромассаж, кавитация, вакуумный массаж, прессотерапия · 60–90 мин</small></span>
+              <span class="dots"></span><span class="price">44 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">5 процедур</span>
+              <span class="dots"></span><span class="price">176 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">10 процедур</span>
+              <span class="dots"></span><span class="price">352 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-laser" role="tabpanel" aria-labelledby="tab-laser" hidden>
+        <div class="menu-group split">
+          <h3>По зонам</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Над губой</span>
+              <span class="dots"></span><span class="price">3 300 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Подбородок</span>
+              <span class="dots"></span><span class="price">3 300 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Бакенбарды</span>
+              <span class="dots"></span><span class="price">3 300 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Шея</span>
+              <span class="dots"></span><span class="price">4 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Подмышечные впадины</span>
+              <span class="dots"></span><span class="price">6 600 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лицо</span>
+              <span class="dots"></span><span class="price">7 700 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Руки до локтя</span>
+              <span class="dots"></span><span class="price">7 700 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Живот</span>
+              <span class="dots"></span><span class="price">8 800 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Ягодицы</span>
+              <span class="dots"></span><span class="price">8 800 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Руки полностью</span>
+              <span class="dots"></span><span class="price">9 900 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Бикини</span>
+              <span class="dots"></span><span class="price">9 900 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Спина полностью</span>
+              <span class="dots"></span><span class="price">11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Ноги до колен</span>
+              <span class="dots"></span><span class="price">11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Ноги полностью</span>
+              <span class="dots"></span><span class="price">15 500 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group split">
+          <h3>Комплексы</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Бикини и подмышки</span>
+              <span class="dots"></span><span class="price">14 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Подмышки, руки до локтя, ноги до колен</span>
+              <span class="dots"></span><span class="price">21 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Бикини, подмышки, ноги до колен</span>
+              <span class="dots"></span><span class="price">23 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Бикини, руки до локтя, ноги до колен, подмышки<small>Усики в подарок</small></span>
+              <span class="dots"></span><span class="price">29 900 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Бикини, руки и ноги полностью, подмышки<small>Усики в подарок</small></span>
+              <span class="dots"></span><span class="price">35 500 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-depil" role="tabpanel" aria-labelledby="tab-depil" hidden>
+        <div class="menu-group split">
+          <h3>Шугаринг</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Над губой</span>
+              <span class="dots"></span><span class="price">1 650 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Подбородок</span>
+              <span class="dots"></span><span class="price">2 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Подмышечные впадины</span>
+              <span class="dots"></span><span class="price">2 750 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Чистка вросших волос</span>
+              <span class="dots"></span><span class="price">3 300 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лицо</span>
+              <span class="dots"></span><span class="price">4 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Руки до локтя</span>
+              <span class="dots"></span><span class="price">4 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Руки</span>
+              <span class="dots"></span><span class="price">6 600 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Ноги до колен</span>
+              <span class="dots"></span><span class="price">6 600 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Комбо<small>Руки полностью, ноги до колен, подмышечные впадины</small></span>
+              <span class="dots"></span><span class="price">14 300 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group split">
+          <h3>Депиляция ниткой</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Над губой</span>
+              <span class="dots"></span><span class="price">2 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Щёки</span>
+              <span class="dots"></span><span class="price">2 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Подбородок</span>
+              <span class="dots"></span><span class="price">2 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лоб</span>
+              <span class="dots"></span><span class="price">2 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Баки</span>
+              <span class="dots"></span><span class="price">3 300 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лицо</span>
+              <span class="dots"></span><span class="price">5 500 — 7 700 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-hands" role="tabpanel" aria-labelledby="tab-hands" hidden>
+        <div class="menu-group">
+          <h3>Маникюр и педикюр</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Маникюр обрезной или комбинированный</span>
+              <span class="dots"></span><span class="price">5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Детский педикюр</span>
+              <span class="dots"></span><span class="price">5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Классический педикюр</span>
+              <span class="dots"></span><span class="price">от 10 900 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Смарт-педикюр</span>
+              <span class="dots"></span><span class="price">от 10 900 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Парафинотерапия рук / ног<small>Глубокое увлажнение кожи</small></span>
+              <span class="dots"></span><span class="price">3 000 / 4 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Снятие гель-лака</span>
+              <span class="dots"></span><span class="price">3 300 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Снятие нарощенных ногтей</span>
+              <span class="dots"></span><span class="price">4 400 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Подология</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Консультация подолога и диагностика</span>
+              <span class="dots"></span><span class="price">5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Медицинский педикюр</span>
+              <span class="dots"></span><span class="price">от 12 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Зачистка одного ногтя<small>Работа с грибковыми поражениями</small></span>
+              <span class="dots"></span><span class="price">от 5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Прижигание бородавки</span>
+              <span class="dots"></span><span class="price">от 5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Удаление вросшего ногтя</span>
+              <span class="dots"></span><span class="price">от 4 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Стержневые мозоли</span>
+              <span class="dots"></span><span class="price">от 4 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Титановая нить<small>1 ноготь</small></span>
+              <span class="dots"></span><span class="price">15 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Инфинити титаниум<small>Новая методика</small></span>
+              <span class="dots"></span><span class="price">16 500 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group split">
+          <h3>Экспресс-услуги</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Маникюр и смарт-педикюр<small>45–60 минут</small></span>
+              <span class="dots"></span><span class="price">16 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Маникюр, смарт-педикюр, ламинирование ресниц</span>
+              <span class="dots"></span><span class="price">26 300 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Маникюр, смарт-педикюр, ламинирование ресниц и бровей</span>
+              <span class="dots"></span><span class="price">36 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">То же плюс окрашивание бровей</span>
+              <span class="dots"></span><span class="price">40 600 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-lashes" role="tabpanel" aria-labelledby="tab-lashes" hidden>
+        <div class="menu-group split">
+          <h3>Ресницы и брови</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Ламинирование бровей и ресниц</span>
+              <span class="dots"></span><span class="price">17 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Корейское ламинирование ресниц</span>
+              <span class="dots"></span><span class="price">11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Ламинирование ресниц Elleebana</span>
+              <span class="dots"></span><span class="price">9 900 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Ламинирование нижних ресниц</span>
+              <span class="dots"></span><span class="price">5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Долговременная укладка бровей</span>
+              <span class="dots"></span><span class="price">9 900 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Окрашивание бровей<small>Без осветления</small></span>
+              <span class="dots"></span><span class="price">4 400 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Снятие нарощенных ресниц</span>
+              <span class="dots"></span><span class="price">3 300 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-hair" role="tabpanel" aria-labelledby="tab-hair" hidden>
+        <div class="menu-group">
+          <h3>Стрижка и укладка</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Стрижка</span>
+              <span class="dots"></span><span class="price">6 000 — 12 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Детская стрижка</span>
+              <span class="dots"></span><span class="price">4 000 — 11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Укладка</span>
+              <span class="dots"></span><span class="price">5 500 — 11 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Окрашивание и уход</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Окрашивание корней<small>Плюс расход материала</small></span>
+              <span class="dots"></span><span class="price">от 13 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Окрашивание полностью<small>Плюс расход материала</small></span>
+              <span class="dots"></span><span class="price">от 20 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Сложное окрашивание<small>Плюс расход материала</small></span>
+              <span class="dots"></span><span class="price">от 40 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Смывка<small>Плюс расход материала</small></span>
+              <span class="dots"></span><span class="price">от 25 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Осветление маслом<small>Плюс расход материала</small></span>
+              <span class="dots"></span><span class="price">от 40 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Лечение волос<small>Плюс расход материала</small></span>
+              <span class="dots"></span><span class="price">от 18 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Пилинг головы<small>Плюс расход материала</small></span>
+              <span class="dots"></span><span class="price">от 11 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-cosmo" role="tabpanel" aria-labelledby="tab-cosmo" hidden>
+        <div class="menu-group">
+          <h3>Инъекционные методики</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Биоревитализация</span>
+              <span class="dots"></span><span class="price">от 45 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Мезотерапия</span>
+              <span class="dots"></span><span class="price">от 20 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Капилляротерапия</span>
+              <span class="dots"></span><span class="price">от 28 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Капилляротерапия глубокая</span>
+              <span class="dots"></span><span class="price">от 35 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Капилляротерапия и мезотерапия</span>
+              <span class="dots"></span><span class="price">40 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Биоимпедансный анализ состава тела</span>
+              <span class="dots"></span><span class="price">5 000 — 10 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Чистка лица и пилинги</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Ультразвуковая чистка</span>
+              <span class="dots"></span><span class="price">15 950 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Механическая чистка</span>
+              <span class="dots"></span><span class="price">18 700 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Комбинированная чистка</span>
+              <span class="dots"></span><span class="price">23 550 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Пилинг</span>
+              <span class="dots"></span><span class="price">35 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Чистка и пилинг</span>
+              <span class="dots"></span><span class="price">40 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Пилинг PRX-T33 и чистка</span>
+              <span class="dots"></span><span class="price">53 700 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Хиджама</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Хиджама зональная</span>
+              <span class="dots"></span><span class="price">9 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Женские точки</span>
+              <span class="dots"></span><span class="price">9 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Хиджама на голову</span>
+              <span class="dots"></span><span class="price">12 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Хиджама спины</span>
+              <span class="dots"></span><span class="price">15 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Хиджама общая</span>
+              <span class="dots"></span><span class="price">28 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Фракционная банка и капилляротерапия</span>
+              <span class="dots"></span><span class="price">40 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Аппаратные процедуры</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Карбокситерапия</span>
+              <span class="dots"></span><span class="price">от 15 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Biomatrix Topaz</span>
+              <span class="dots"></span><span class="price">80 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="menu cat-panel" id="panel-other" role="tabpanel" aria-labelledby="tab-other" hidden>
+        <div class="menu-group">
+          <h3>Роспись хной</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Мехенди на руки</span>
+              <span class="dots"></span><span class="price">от 2 200 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Мехенди на тело</span>
+              <span class="dots"></span><span class="price">от 4 400 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Макияж</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Дневной макияж</span>
+              <span class="dots"></span><span class="price">от 13 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Вечерний макияж</span>
+              <span class="dots"></span><span class="price">от 17 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Свадебный макияж</span>
+              <span class="dots"></span><span class="price">от 19 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Пирсинг</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Прокол мочек</span>
+              <span class="dots"></span><span class="price">5 500 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Прокол хряща</span>
+              <span class="dots"></span><span class="price">6 600 ₸</span>
+            </li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <h3>Удаление</h3>
+          <ul>
+            <li class="menu-row">
+              <span class="name">Удаление татуировок</span>
+              <span class="dots"></span><span class="price">от 11 000 ₸</span>
+            </li>
+            <li class="menu-row">
+              <span class="name">Удаление перманента</span>
+              <span class="dots"></span><span class="price">от 11 000 ₸</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="menu-note">
+        Для <b>невест и групп</b> считаем отдельно: напишите в WhatsApp, пришлём смету в тот же день.
+      </p>
+    </div>
+  </section>
+
+  <!-- ---------- Обучение ---------- -->
+  <section id="training">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div>
+          <p class="eyebrow">Обучение</p>
+          <h2>Курс по ламинированию</h2>
+        </div>
+        <p class="lead">
+          Ламинирование ресниц и бровей: теория, отработка на моделях и сертификат.
+          Даты ближайшего набора уточняйте в WhatsApp.
+        </p>
+      </div>
+
+      <div class="training reveal">
+        <ol class="training-steps">
+          <li>
+            <span class="step" aria-hidden="true">01</span>
+            <div>
+              <h3>Теория</h3>
+              <p>Составы и типы волоса, противопоказания, подбор под клиентку и уход после процедуры.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step" aria-hidden="true">02</span>
+            <div>
+              <h3>Практика на моделях</h3>
+              <p>Отработка всей процедуры под присмотром мастера — до уверенного результата, а не «посмотрели и разошлись».</p>
+            </div>
+          </li>
+          <li>
+            <span class="step" aria-hidden="true">03</span>
+            <div>
+              <h3>Сертификат</h3>
+              <p>По окончании курса выдаём сертификат и остаёмся на связи по вопросам в работе.</p>
+            </div>
+          </li>
+        </ol>
+
+        <aside class="training-cta">
+          <h3>Записаться на курс</h3>
+          <p>Расскажем про даты набора, стоимость и что взять с собой.</p>
+          <a class="btn btn-primary" href="https://wa.me/77074040470">Написать в WhatsApp</a>
+          <a class="btn btn-plain" href="tel:+77074040470">+7 707 404 04 70</a>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- О салоне ---------- -->
+  <section id="trust">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div>
+          <p class="eyebrow">О салоне</p>
+          <h2>Почему нам доверяют</h2>
+        </div>
+        <p class="lead">
+          Halal Beauty работает в Алматы пятый год. За это время через нас прошли больше
+          шестидесяти тысяч клиенток — и почти все возвращаются.
+        </p>
+      </div>
+
+      <div class="masters reveal">
+        <article class="master">
+          <div class="monogram" aria-hidden="true">5</div>
+          <h3>Пять лет работы</h3>
+          <p class="role">С 2021 года</p>
+          <p>Салон открылся как ответ на простой запрос: место, где женщина чувствует себя свободно и спокойно.</p>
+        </article>
+        <article class="master">
+          <div class="monogram" aria-hidden="true">60K</div>
+          <h3>60 000+ клиенток</h3>
+          <p class="role">И большинство приходит снова</p>
+          <p>Мы ведём клиенток годами и знаем историю каждой: аллергии, предпочтения, чувствительность кожи.</p>
+        </article>
+        <article class="master">
+          <div class="monogram" aria-hidden="true">★</div>
+          <h3>«Лучший салон»</h3>
+          <p class="role">Победители номинации</p>
+          <p>Награда за качество услуг и сервис — но главную оценку нам ставят клиентки в отзывах.</p>
+        </article>
+        <article class="master">
+          <div class="monogram" aria-hidden="true">4.9</div>
+          <h3>4,9 из 5 в 2ГИС</h3>
+          <p class="role">1716 отзывов</p>
+          <p>Оценка держится годами и на потоке в десятки тысяч визитов — это и есть главный показатель.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- Работы ---------- -->
+  <section id="works">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div>
+          <p class="eyebrow">Портфолио</p>
+          <h2>Наши работы</h2>
+        </div>
+      </div>
+
+      <!-- Замените блоки .shot на <img src="..." alt="..." loading="lazy"> с реальными фото из Instagram -->
+      <div class="gallery reveal">
+        <div class="shot"><span class="cap">Маникюр и педикюр</span></div>
+        <div class="shot"><span class="cap">Ламинирование ресниц</span></div>
+        <div class="shot"><span class="cap">Роспись хной</span></div>
+        <div class="shot"><span class="cap">Архитектура бровей</span></div>
+        <div class="shot"><span class="cap">SPA-комплекс</span></div>
+        <div class="shot"><span class="cap">Свадебный макияж</span></div>
+      </div>
+
+      <p class="gallery-note">
+        Больше работ — в <a href="https://www.instagram.com/halal_beauty.kz">Instagram</a>
+        и <a href="https://www.tiktok.com/@halal_beauty.kz">TikTok</a>: 33 тысячи подписчиц,
+        обновляем каждую неделю.
+      </p>
+    </div>
+  </section>
+
+  <!-- ---------- Отзывы ---------- -->
+  <section id="reviews">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div>
+          <p class="eyebrow">Отзывы</p>
+          <h2>Что говорят клиентки</h2>
+        </div>
+        <p class="lead">
+          Рейтинг <b>4,9 из 5</b> по 1716 отзывам в 2ГИС. Ниже — несколько последних;
+          все отзывы, включая критику, открыты
+          <a href="https://2gis.kz/almaty/firm/70000001045331437/tab/reviews">на странице 2ГИС</a>.
+        </p>
+      </div>
+
+      <!-- Реальные отзывы из 2ГИС -->
+      <div class="reviews reveal">
+        <figure class="review">
+          <blockquote lang="kk">«Халал бьютидің қызметіне риза болып қайттым. Қыздар өте сыпайы, әсіресе маникюр мастері Әселге көп рақмет»</blockquote>
+          <figcaption><span class="stars" aria-label="5 из 5">★★★★★</span><b>Назерке</b>маникюр · 14 июля 2026, 2ГИС</figcaption>
+        </figure>
+        <figure class="review">
+          <blockquote>«Мне очень понравилось посещение салона. Здесь приятная, уютная атмосфера, всё чисто и аккуратно»</blockquote>
+          <figcaption><span class="stars" aria-label="5 из 5">★★★★★</span><b>Нигара Супиева</b>11 августа 2026, 2ГИС</figcaption>
+        </figure>
+        <figure class="review">
+          <blockquote>«Очень довольна своей новой стрижкой. Асель внимательно выслушала все мои пожелания, работала аккуратно»</blockquote>
+          <figcaption><span class="stars" aria-label="5 из 5">★★★★★</span><b>Erva Saroglu</b>стрижка · 1 августа 2026, 2ГИС</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- Контакты ---------- -->
+  <section id="contacts">
+    <div class="wrap">
+      <div class="contact-grid">
+        <div class="reveal">
+          <p class="eyebrow">Контакты</p>
+          <h2 style="margin-bottom: 2rem;">Как нас найти</h2>
+
+          <div class="contact-card">
+          <dl class="contact-list">
+            <div>
+              <dt>Адрес</dt>
+              <dd>
+                Алматы, ул. Розыбакиева 289/1
+                <small>ЖК «Айгерим», 1 этаж · Бостандыкский район, 050060</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Телефон и WhatsApp</dt>
+              <dd>
+                <a href="tel:+77074040470">+7 707 404 04 70</a>
+                <small><a href="tel:+77067040536">+7 706 704 05 36</a> — второй номер</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Соцсети</dt>
+              <dd>
+                <a href="https://www.instagram.com/halal_beauty.kz">Instagram</a> ·
+                <a href="https://www.tiktok.com/@halal_beauty.kz">TikTok</a>
+                <small>@halal_beauty.kz</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Часы работы</dt>
+              <dd>
+                Ежедневно, 09:00 — 20:00
+                <small>По предварительной записи</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Карта</dt>
+              <dd><a href="https://2gis.kz/almaty/geo/70000001045331437">Открыть в 2ГИС</a>
+                <small>Рейтинг 4,9 · 1716 отзывов</small>
+              </dd>
+            </div>
+          </dl>
+          </div>
+        </div>
+
+        <div class="reveal">
+          <p class="eyebrow">Частые вопросы</p>
+          <h2 style="margin-bottom: 2rem;">Коротко о важном</h2>
+
+          <div class="faq">
+            <details>
+              <summary>Точно ли в салоне не бывает мужчин?</summary>
+              <p>Да. Весь персонал женский, включая администраторов и клининг. Курьеров и мастеров по ремонту принимаем только в нерабочие часы, когда в салоне нет клиенток.</p>
+            </details>
+            <details>
+              <summary>Можно попросить отдельный кабинет?</summary>
+              <p>Да, скажите об этом при записи — доплаты за это нет. Если кабинет занят, предложим ближайшее свободное время, а не посадим в общий зал без предупреждения.</p>
+            </details>
+            <details>
+              <summary>Можно прийти с ребёнком?</summary>
+              <p>Да. Предупредите при записи — подберём кабинет и время, когда в салоне спокойнее.</p>
+            </details>
+            <details>
+              <summary>Вы обучаете мастеров?</summary>
+              <p>Да, мы ведём курс по ламинированию ресниц и бровей: теория, отработка на моделях и сертификат. Даты набора уточняйте в WhatsApp.</p>
+            </details>
+            <details>
+              <summary>Как отменить или перенести запись?</summary>
+              <p>Напишите в WhatsApp не позднее чем за 3 часа — перенесём без вопросов. Если предупредить позже двух раз подряд, следующая запись будет с предоплатой 30%.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="#top">
+          <img class="brand-mark" src="logo.png" width="512" height="512" alt="Halal Beauty">
+          <span>Halal <em>Beauty</em></span>
+        </a>
+        <p class="footer-tagline">by Maksutova Aida</p>
+        <p>Пространство красоты только для женщин. Алматы, Розыбакиева 289/1, ЖК «Айгерим», 1 этаж. Ежедневно с 09:00 до 20:00.</p>
+      </div>
+
+      <div>
+        <h4>Разделы</h4>
+        <ul>
+          <li><a href="#services">Услуги</a></li>
+          <li><a href="#trust">О салоне</a></li>
+          <li><a href="#training">Обучение</a></li>
+          <li><a href="#works">Работы</a></li>
+          <li><a href="#reviews">Отзывы</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Связаться</h4>
+        <ul>
+          <li><a href="tel:+77074040470">+7 707 404 04 70</a></li>
+          <li><a href="tel:+77067040536">+7 706 704 05 36</a></li>
+          <li><a href="https://wa.me/77074040470">WhatsApp</a></li>
+          <li><a href="https://www.instagram.com/halal_beauty.kz">Instagram</a></li>
+          <li><a href="https://wa.me/77074040470">Записаться в WhatsApp</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="copy">
+      <span>© 2026 Halal Beauty</span>
+      <span>Работаем по записи · ежедневно 09:00 — 20:00</span>
+    </div>
+  </div>
+</footer>
+<!-- BUILD:END -->
+<script src="script.js"></script>
+</body>
+</html>
