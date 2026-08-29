@@ -653,6 +653,20 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 .menu-row .name { color: var(--ink); font-size: .975rem; }
 .menu-row .name small { display: block; color: var(--ink-2); font-size: .825rem; line-height: 1.45; }
 
+.menu-row .pax {
+  display: inline-block;
+  margin-left: .5rem;
+  padding: .1rem .45rem;
+  border: 1px solid var(--beige-dark);
+  border-radius: 999px;
+  font-size: .7rem;
+  font-style: normal;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--ink-2);
+  vertical-align: .1em;
+}
+
 .menu-row .dots {
   flex: 1 1 1.5rem;
   min-width: 1.5rem;
