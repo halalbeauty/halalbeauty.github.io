@@ -661,18 +661,22 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 .menu-row .name { color: var(--ink); font-size: .975rem; }
 .menu-row .name small { display: block; color: var(--ink-2); font-size: .825rem; line-height: 1.45; }
 
+/* Метка под ценой — вне потока, чтобы не растягивать колонку с ценой */
 .menu-row .pax {
-  display: block;
-  margin-top: .2rem;
-  font-size: .72rem;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: .15rem;
+  font-size: .8rem;
   font-style: normal;
-  font-weight: 500;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  text-align: right;
+  font-weight: 400;
+  line-height: 1.45;
   white-space: nowrap;
-  color: var(--accent-ink);
+  color: var(--ink-2);
 }
+
+/* Запас под меткой, чтобы она не наезжала на следующую строку */
+.menu-row:has(.pax) { padding-bottom: 1.1rem; }
 
 .menu-row .dots {
   flex: 1 1 1.5rem;
@@ -682,6 +686,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 }
 
 .menu-row .price {
+  position: relative;
   flex: none;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
