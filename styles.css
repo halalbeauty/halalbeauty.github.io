@@ -151,18 +151,18 @@ h1, h2, h3 {
   line-height: 1.06;
 }
 
-/* Заголовок первого экрана — антиква Playfair: буквы уже гротеска, поэтому
-   в строку помещается больше слов, и выглядит мягче при крупном кегле. */
+/* Заголовок первого экрана — Onest среднего веса: тоньше и спокойнее
+   жирного Golos, на телефоне в строку помещается больше слов. */
 h1 {
-  font-family: "Playfair Display", "Golos Text", Georgia, serif;
-  font-weight: 600;
-  font-size: clamp(2rem, 7.4vw, 4.6rem);
+  font-family: "Onest", "Golos Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.95rem, 7vw, 4.4rem);
   line-height: 1.1;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.022em;
 }
 
 @media (max-width: 620px) {
-  h1 { line-height: 1.18; letter-spacing: -0.005em; }
+  h1 { line-height: 1.16; letter-spacing: -0.012em; }
 }
 h2 { font-size: clamp(1.9rem, 4.6vw, 3rem); letter-spacing: -0.032em; }
 h3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); font-weight: 700; letter-spacing: -0.012em; }
