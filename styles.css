@@ -401,7 +401,6 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   }
 
   body.nav-open .nav { opacity: 1; visibility: visible; pointer-events: auto; transform: none; }
-  body.nav-open { overflow: hidden; }
 
   .nav-links {
     flex-direction: column;

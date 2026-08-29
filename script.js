@@ -15,29 +15,11 @@
     setNav(!document.body.classList.contains('nav-open'));
   });
 
+  /* Панель закрывается по клику на ссылку; переход по якорю — нативный
+     (scroll-behavior: smooth + scroll-margin-top), скролл фона мы не
+     блокируем, поэтому sticky-шапка не ломается. */
   nav.addEventListener('click', function (e) {
-    var link = e.target.closest('a');
-    if (!link) return;
-    setNav(false);
-
-    var href = link.getAttribute('href') || '';
-    if (href.charAt(0) !== '#' || href.length < 2) return;
-    var target = document.getElementById(href.slice(1));
-    if (!target) return;
-
-    /* Прыжок по якорю происходил в тот же кадр, где с body ещё снимается
-       overflow: hidden. В Safari это ломает sticky-шапку — она остаётся у
-       верха документа и больше не едет со страницей. Поэтому скроллим сами
-       и только после того, как блокировка прокрутки реально снята. */
-    e.preventDefault();
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        var top = target.getBoundingClientRect().top + window.pageYOffset - header.offsetHeight;
-        var smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        window.scrollTo({ top: Math.max(top, 0), behavior: smooth ? 'smooth' : 'auto' });
-        if (window.history && history.replaceState) history.replaceState(null, '', href);
-      });
-    });
+    if (e.target.closest('a')) setNav(false);
   });
 
   document.addEventListener('keydown', function (e) {
@@ -52,6 +34,17 @@
 
   /* ---------- Линия под шапкой при прокрутке ---------- */
   var header = document.querySelector('.header');
+
+  /* Реальная высота шапки → --header-h: от неё считается верх и высота
+     мобильной панели. Захардкоженное значение расходилось с фактическим
+     (перенос строки в логотипе, крупный шрифт), и панель уезжала. */
+  var syncHeaderH = function () {
+    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+  };
+  syncHeaderH();
+  window.addEventListener('resize', syncHeaderH);
+  window.addEventListener('orientationchange', syncHeaderH);
+
   var onScroll = function () {
     header.classList.toggle('scrolled', window.scrollY > 16);
   };
