@@ -20,7 +20,11 @@
 <body>
 <!-- BUILD:START -->
 
-<header class="header" id="top">
+<!-- Якорь «наверх». На самой шапке он не работал: она sticky и всегда
+     в зоне видимости, поэтому браузер считал цель достигнутой и не скроллил. -->
+<span id="top" class="anchor-top"></span>
+
+<header class="header">
   <div class="wrap header-inner">
     <a class="brand" href="#top">
       <img class="brand-mark" src="logo.png" width="512" height="512" alt="Halal Beauty">

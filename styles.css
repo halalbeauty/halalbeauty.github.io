@@ -1161,3 +1161,6 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 
 /* Отступ под липкой шапкой при переходе по якорю */
 [id] { scroll-margin-top: 88px; }
+
+/* Якорь «наверх»: нулевая точка документа, без отступа под шапку */
+.anchor-top { display: block; height: 0; scroll-margin-top: 0; }
