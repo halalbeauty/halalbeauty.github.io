@@ -9,6 +9,8 @@ backend:
   base_url: https://halalbeauty-auth.kazakhbaimeyrzhan.workers.dev
 
 locale: ru
+media_folder: images/uploads
+public_folder: /images/uploads
 site_url: https://halalbeauty.github.io
 publish_mode: simple
 
