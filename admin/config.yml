@@ -17,6 +17,8 @@ publish_mode: simple
 collections:
   - name: pages
     label: Сайт
+    editor:
+      preview: false
     files:
       - name: services
         label: Услуги и цены
