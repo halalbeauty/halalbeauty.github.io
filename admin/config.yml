@@ -5,8 +5,8 @@ backend:
   name: github
   repo: halalbeauty/halalbeauty.github.io
   branch: main
-  # TODO: адрес сервиса входа (Cloudflare Worker). Без него кнопка «Войти через GitHub» не заработает.
-  base_url: https://OAUTH-PROXY.example.workers.dev
+  # Сервис входа (Cloudflare Worker, код в oauth/worker.js)
+  base_url: https://halalbeauty-auth.kazakhbaimeyrzhan.workers.dev
 
 locale: ru
 site_url: https://halalbeauty.github.io
