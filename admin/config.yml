@@ -1,0 +1,58 @@
+# Админка Decap CMS: https://halalbeauty.github.io/admin/
+# Вход — через GitHub; сохранить правки может только тот, у кого есть доступ
+# на запись в репозиторий. Каждое «Сохранить» — это коммит в main.
+backend:
+  name: github
+  repo: halalbeauty/halalbeauty.github.io
+  branch: main
+  # TODO: адрес сервиса входа (Cloudflare Worker). Без него кнопка «Войти через GitHub» не заработает.
+  base_url: https://OAUTH-PROXY.example.workers.dev
+
+locale: ru
+site_url: https://halalbeauty.github.io
+publish_mode: simple
+
+collections:
+  - name: pages
+    label: Сайт
+    files:
+      - name: services
+        label: Услуги и цены
+        file: data/services.json
+        format: json
+        fields:
+          - label: Категории
+            name: tabs
+            widget: list
+            label_singleton: категория
+            summary: "{{fields.title}}"
+            fields:
+              - { label: Название вкладки, name: title, widget: string }
+              - { label: Код (латиницей, у существующих не менять), name: id, widget: string, pattern: ["^[a-z0-9-]+$", "Только маленькие латинские буквы, цифры и дефис"] }
+              - label: Блоки
+                name: groups
+                widget: list
+                label_singleton: блок
+                summary: "{{fields.title}}"
+                fields:
+                  - { label: Заголовок блока, name: title, widget: string }
+                  - { label: Две колонки, name: split, widget: boolean, default: false, required: false }
+                  - label: Услуги
+                    name: rows
+                    widget: list
+                    label_singleton: услуга
+                    summary: "{{fields.name}} — {{fields.price}}"
+                    fields:
+                      - { label: Название, name: name, widget: string }
+                      - { label: Цена (например «5 500 ₸» или «от 4 400 ₸»), name: price, widget: string }
+                      - { label: Короткое пояснение под названием, name: note, widget: string, required: false }
+                      - { label: Длительность / на сколько человек (для комплексов), name: meta, widget: string, required: false }
+                      - label: Состав комплекса
+                        name: incl
+                        widget: list
+                        required: false
+                        label_singleton: пункт
+                        summary: "{{fields.text}}"
+                        fields:
+                          - { label: Текст, name: text, widget: string }
+                          - { label: Это заголовок этапа, name: stage, widget: boolean, default: false, required: false }
