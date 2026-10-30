@@ -2,11 +2,83 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Halal Beauty — управление сайтом</title>
+<meta name="theme-color" content="#F5F5F7">
+<title>Halal Beauty — редактирование прайса</title>
+<link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Onest:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="admin.css">
 </head>
-<body>
-<script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+<body class="adm">
+
+<header class="adm-bar">
+  <div class="wrap adm-bar-inner">
+    <a class="brand" href="../" title="Открыть сайт">
+      <img class="brand-mark" src="../logo-128.png" width="128" height="128" alt="">
+      <span>Halal <em>Beauty</em></span>
+    </a>
+    <span class="adm-bar-title">Редактирование прайса</span>
+    <div class="adm-bar-actions" id="bar-actions" hidden>
+      <a class="btn btn-plain" href="../" target="_blank" rel="noopener">Открыть сайт</a>
+      <button class="btn btn-ghost" type="button" id="logout">Выйти</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap adm-main">
+
+  <!-- Вход -->
+  <section class="adm-screen" id="screen-login" hidden>
+    <div class="menu-group adm-card">
+      <p class="eyebrow">Только для администратора</p>
+      <h1 class="adm-h1">Вход</h1>
+      <p class="adm-muted">Войдите через GitHub. Менять прайс могут только те, у кого есть доступ к сайту.</p>
+      <button class="btn btn-primary" type="button" id="login">Войти через GitHub</button>
+      <p class="adm-error" id="login-error" hidden></p>
+    </div>
+  </section>
+
+  <!-- Загрузка / нет доступа / ошибка -->
+  <section class="adm-screen" id="screen-loading">
+    <div class="menu-group adm-card"><p class="adm-muted" id="loading-text">Загружаем прайс…</p></div>
+  </section>
+
+  <section class="adm-screen" id="screen-denied" hidden>
+    <div class="menu-group adm-card">
+      <h1 class="adm-h1">Нет доступа</h1>
+      <p class="adm-muted" id="denied-text">У этого аккаунта GitHub нет прав на изменение сайта. Войдите под другим аккаунтом.</p>
+      <button class="btn btn-ghost" type="button" id="denied-logout">Выйти</button>
+    </div>
+  </section>
+
+  <!-- Редактор -->
+  <section class="adm-screen" id="screen-editor" hidden>
+    <p class="adm-hint">
+      Нажмите на название или цену и поправьте. Изменения попадут на сайт только после кнопки
+      <b>«Сохранить»</b> внизу; на сайте они появятся через 1–2 минуты.
+    </p>
+    <div class="adm-tabs-row">
+      <div class="cat-nav" id="tabs" role="tablist" aria-label="Категории"></div>
+      <button class="adm-pill" type="button" id="add-tab">+ Категория</button>
+    </div>
+    <div id="tab-tools"></div>
+    <div class="menu cat-panel" id="panel"></div>
+  </section>
+</main>
+
+<div class="adm-save" id="savebar" hidden>
+  <div class="wrap adm-save-inner">
+    <span class="adm-save-status" id="save-status">Нет изменений</span>
+    <button class="btn btn-primary" type="button" id="save" disabled>Сохранить</button>
+  </div>
+</div>
+
+<div class="adm-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="admin.js"></script>
 </body>
 </html>
