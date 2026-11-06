@@ -94,24 +94,47 @@
   });
 
   /* ---------- Работы: карусели ----------
-     Листание — нативный scroll-snap (свайп работает и без скрипта);
-     здесь только индикатор, стрелки для мыши и клавиши ← →. */
+     Листание — нативный scroll-snap (свайп работает и без скрипта).
+     Скрипт делает три вещи: индикатор, стрелки/клавиши для десктопа и
+     высоту рамки: она следует за пальцем и плавно переходит от пропорций
+     текущего фото к пропорциям следующего. */
   var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   Array.prototype.forEach.call(document.querySelectorAll('.work'), function (card) {
+    var media = card.querySelector('.work-media');
     var track = card.querySelector('.work-track');
+    var imgs = card.querySelectorAll('.work-slide');
     var bars = card.querySelectorAll('.work-bars i');
     var prev = card.querySelector('.work-nav.prev');
     var next = card.querySelector('.work-nav.next');
-    var count = bars.length;
+    var count = imgs.length;
     var current = -1;
     var queued = false;
-    if (!track || count < 2) return;
+    if (!media || !track || count < 2) return;
+
+    // высота / ширина фото: из атрибутов (их пишет render.py), иначе из загруженного файла
+    function ratio(k) {
+      var im = imgs[k];
+      var w = +im.getAttribute('width') || im.naturalWidth;
+      var h = +im.getAttribute('height') || im.naturalHeight;
+      return w && h ? h / w : 0;
+    }
+
+    function fit(p) {
+      var i = Math.min(count - 1, Math.floor(p));
+      var a = ratio(i);
+      var b = ratio(Math.min(count - 1, i + 1));
+      if (!a || !b) return;
+      media.style.aspectRatio = String(1 / (a + (b - a) * (p - i)));
+    }
 
     function update() {
       queued = false;
-      var i = Math.round(track.scrollLeft / track.clientWidth);
-      i = Math.max(0, Math.min(count - 1, i));
+      var w = track.clientWidth;
+      if (!w) return;
+      var p = Math.max(0, Math.min(count - 1, track.scrollLeft / w));
+      fit(p);
+      var i = Math.round(p);
       if (i === current) return;
       current = i;
       Array.prototype.forEach.call(bars, function (bar, k) { bar.classList.toggle('on', k === i); });
@@ -124,12 +147,16 @@
       track.scrollTo({ left: i * track.clientWidth, behavior: calm ? 'auto' : 'smooth' });
     }
 
-    track.addEventListener('scroll', function () {
+    function queue() {
       if (!queued) { queued = true; window.requestAnimationFrame(update); }
-    }, { passive: true });
+    }
+
+    track.addEventListener('scroll', queue, { passive: true });
     window.addEventListener('resize', function () {
       track.scrollLeft = Math.max(0, current) * track.clientWidth;
+      queue();
     });
+    Array.prototype.forEach.call(imgs, function (im) { im.addEventListener('load', queue); });
     if (prev) prev.addEventListener('click', function () { go(-1); });
     if (next) next.addEventListener('click', function () { go(1); });
     track.addEventListener('keydown', function (e) {

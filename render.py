@@ -128,8 +128,8 @@ def image_size(src):
 def work(block):
     """Карточка с каруселью: фото листаются свайпом (CSS scroll-snap), script.js рисует индикатор.
 
-    Рамка берёт пропорции первого фото, а сами фото показываются целиком (без обрезки);
-    подпись и индикатор лежат под рамкой и фото не закрывают."""
+    Рамка берёт пропорции первого фото, а при свайпе script.js плавно подгоняет её высоту
+    под соседнее фото, так что каждое видно целиком. Подпись и индикатор лежат под рамкой."""
     title = block["title"].strip()
     photos = block["photos"]
     many = len(photos) > 1
@@ -143,9 +143,12 @@ def work(block):
     ]
     for i, src in enumerate(photos):
         alt = "%s, фото %d из %d" % (title, i + 1, len(photos)) if many else title
+        dims = image_size(src)
+        # width/height нужны script.js: по ним рамка плавно меняет высоту при свайпе
+        wh = ' width="%d" height="%d"' % dims if dims else ""
         out.append(
-            '      <img class="work-slide" src="%s" alt="%s" loading="lazy" decoding="async" draggable="false">'
-            % (attr(src), attr(alt))
+            '      <img class="work-slide" src="%s" alt="%s"%s loading="lazy" decoding="async" draggable="false">'
+            % (attr(src), attr(alt), wh)
         )
     out.append("    </div>")
     if many:
