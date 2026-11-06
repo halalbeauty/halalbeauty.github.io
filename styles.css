@@ -988,6 +988,9 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   background: var(--panel);
   box-shadow: 0 10px 28px rgba(0, 0, 0, .1); /* лёгкая: тяжёлую тень пришлось бы перерисовывать на каждом кадре */
   isolation: isolate;
+  /* За краем ленты (iPhone «пружинит» при сильном свайпе) и в полях над коротким фото
+     виден фон окна. script.js красит его в средний цвет текущего фото — вместо чёрной дыры. */
+  transition: background-color .35s ease;
 }
 
 .work-track {
@@ -996,7 +999,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   aspect-ratio: 1 / var(--r, 1.25);
   display: flex;
   overflow-x: auto;
-  overscroll-behavior-x: contain;
+  overscroll-behavior-x: none; /* не «пружинить» за краем и не передавать жест странице */
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;

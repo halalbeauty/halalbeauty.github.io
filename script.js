@@ -95,9 +95,10 @@
 
   /* ---------- Работы: карусели ----------
      Листание — нативный scroll-snap (свайп работает и без скрипта).
-     Скрипт делает четыре вещи: индикатор, стрелки/клавиши для десктопа,
+     Скрипт делает пять вещей: индикатор, стрелки/клавиши для десктопа,
      высоту окна (оно следует за пальцем и плавно переходит от пропорций
-     текущего фото к пропорциям следующего) и подгрузку соседних фото. */
+     текущего фото к пропорциям следующего), подгрузку соседних фото и
+     цвет фона окна по текущему фото (виден, если лента «пружинит» за краем). */
   var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   Array.prototype.forEach.call(document.querySelectorAll('.work'), function (card) {
@@ -115,16 +116,44 @@
 
     // Ленивая загрузка браузера не знает, что соседнее фото вот-вот понадобится:
     // когда карточка рядом с экраном, подгружаем все её фото, чтобы при свайпе не было пустоты
+    // Заодно заранее декодируем: иначе фото, на которое только что перелистнули, может мигнуть пустым
+    function warmUp() {
+      Array.prototype.forEach.call(imgs, function (im) {
+        im.loading = 'eager';
+        if (im.decode) im.decode().catch(function () { /* не критично */ });
+      });
+    }
     if ('IntersectionObserver' in window) {
       var warm = new IntersectionObserver(function (entries) {
         if (!entries[0].isIntersecting) return;
         warm.disconnect();
-        Array.prototype.forEach.call(imgs, function (im) { im.loading = 'eager'; });
+        warmUp();
       }, { rootMargin: '600px 0px' });
       warm.observe(card);
     } else {
-      Array.prototype.forEach.call(imgs, function (im) { im.loading = 'eager'; });
+      warmUp();
     }
+
+    // Средний цвет каждого фото (чуть темнее, чтобы не слепил). Фото с того же сайта,
+    // поэтому canvas не «грязнится»; если вдруг не вышло — остаётся обычный фон.
+    var colors = [];
+    function paint() { if (current >= 0 && colors[current]) media.style.backgroundColor = colors[current]; }
+    Array.prototype.forEach.call(imgs, function (im, k) {
+      function sample() {
+        try {
+          var cv = document.createElement('canvas');
+          cv.width = cv.height = 8;
+          var cx = cv.getContext('2d');
+          cx.drawImage(im, 0, 0, 8, 8);
+          var d = cx.getImageData(0, 0, 8, 8).data;
+          var r = 0, g = 0, b = 0, n = d.length / 4;
+          for (var j = 0; j < d.length; j += 4) { r += d[j]; g += d[j + 1]; b += d[j + 2]; }
+          colors[k] = 'rgb(' + Math.round(r / n * 0.85) + ',' + Math.round(g / n * 0.85) + ',' + Math.round(b / n * 0.85) + ')';
+          if (k === current) paint();
+        } catch (e) { /* без цвета фона — не страшно */ }
+      }
+      if (im.complete && im.naturalWidth) sample(); else im.addEventListener('load', sample);
+    });
 
     // ширину не читаем на каждом кадре: меняется она только при повороте/изменении окна
     var measure = function () { width = track.clientWidth; };
@@ -153,6 +182,7 @@
       var i = Math.round(p);
       if (i === current) return;
       current = i;
+      paint();
       Array.prototype.forEach.call(bars, function (bar, k) { bar.classList.toggle('on', k === i); });
       if (prev) prev.disabled = i === 0;
       if (next) next.disabled = i === count - 1;
