@@ -957,21 +957,44 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 }
 
 /* Карточка-карусель: фото листаются свайпом (scroll-snap), как в TikTok.
-   Рамка (.work-media) повторяет пропорции фото; при свайпе script.js плавно
-   меняет её высоту от текущего фото к следующему. */
+   Устройство нарочно такое, чтобы при свайпе ничего тяжёлого не пересчитывалось:
+   · .work резервирует место под самое высокое фото (--r — его высота/ширина), поэтому
+     когда окно меняет высоту, остальная страница не двигается;
+   · .work-track всегда одного размера (по самому высокому фото) — лента не меняется
+     под пальцем, и Safari не пересчитывает точки «прилипания»;
+   · .work-media — окно с пропорциями текущего фото; script.js плавно меняет его высоту,
+     а фото в ленте стоят по центру и не масштабируются, окно просто открывает их целиком. */
+.work {
+  position: relative;
+  padding-bottom: calc(100% * var(--r, 1.25) + 3.4rem); /* лента + подпись в одну-две строки */
+  contain: layout style;
+  overflow-anchor: none; /* окно меняет высоту — браузер не должен «поправлять» прокрутку страницы */
+}
+
+.work-live {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
 .work-media {
   position: relative;
-  aspect-ratio: 4 / 5; /* запасной вариант; render.py подставляет пропорции фото */
+  display: flex;
+  align-items: center; /* лента выше окна — лишнее обрезается поровну сверху и снизу */
+  aspect-ratio: 4 / 5; /* запасной вариант; render.py подставляет пропорции первого фото */
   border-radius: calc(var(--radius) + 6px);
   overflow: hidden;
   background: var(--panel);
-  box-shadow: var(--shadow);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .1); /* лёгкая: тяжёлую тень пришлось бы перерисовывать на каждом кадре */
   isolation: isolate;
 }
 
 .work-track {
+  flex: none;
+  width: 100%;
+  aspect-ratio: 1 / var(--r, 1.25);
   display: flex;
-  height: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
@@ -979,16 +1002,13 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   -webkit-overflow-scrolling: touch;
 }
 .work-track::-webkit-scrollbar { display: none; }
-/* Со скриптом высота рамки в каждый момент равна пропорциям фото, поэтому cover
-   ничего не обрезает; на лету, пока рамка меняется, не мелькают тёмные поля. */
-.js .work-slide { object-fit: cover; }
 .work-track:focus-visible { outline: 2px solid var(--beige); outline-offset: -4px; }
 
 .work-slide {
   flex: 0 0 100%;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* без скрипта: целиком, с тёмными полями, если пропорции отличаются */
+  object-fit: contain; /* фото целиком, по центру ленты */
   scroll-snap-align: center;
   scroll-snap-stop: always; /* за один свайп — одно фото */
   -webkit-user-select: none;
@@ -998,7 +1018,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 /* Подпись и индикатор — под фото */
 .work-cap {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: .75rem;
   padding: .75rem .25rem 0;
@@ -1015,6 +1035,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   flex: none;
   display: flex;
   gap: 5px;
+  margin-top: .42rem; /* по центру первой строки названия */
 }
 .work-bars i {
   width: 7px;

@@ -95,9 +95,9 @@
 
   /* ---------- Работы: карусели ----------
      Листание — нативный scroll-snap (свайп работает и без скрипта).
-     Скрипт делает три вещи: индикатор, стрелки/клавиши для десктопа и
-     высоту рамки: она следует за пальцем и плавно переходит от пропорций
-     текущего фото к пропорциям следующего. */
+     Скрипт делает четыре вещи: индикатор, стрелки/клавиши для десктопа,
+     высоту окна (оно следует за пальцем и плавно переходит от пропорций
+     текущего фото к пропорциям следующего) и подгрузку соседних фото. */
   var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   Array.prototype.forEach.call(document.querySelectorAll('.work'), function (card) {
@@ -110,29 +110,45 @@
     var count = imgs.length;
     var current = -1;
     var queued = false;
+    var width = 0;
     if (!media || !track || count < 2) return;
 
-    // высота / ширина фото: из атрибутов (их пишет render.py), иначе из загруженного файла
-    function ratio(k) {
-      var im = imgs[k];
-      var w = +im.getAttribute('width') || im.naturalWidth;
-      var h = +im.getAttribute('height') || im.naturalHeight;
-      return w && h ? h / w : 0;
+    // Ленивая загрузка браузера не знает, что соседнее фото вот-вот понадобится:
+    // когда карточка рядом с экраном, подгружаем все её фото, чтобы при свайпе не было пустоты
+    if ('IntersectionObserver' in window) {
+      var warm = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting) return;
+        warm.disconnect();
+        Array.prototype.forEach.call(imgs, function (im) { im.loading = 'eager'; });
+      }, { rootMargin: '600px 0px' });
+      warm.observe(card);
+    } else {
+      Array.prototype.forEach.call(imgs, function (im) { im.loading = 'eager'; });
     }
+
+    // ширину не читаем на каждом кадре: меняется она только при повороте/изменении окна
+    var measure = function () { width = track.clientWidth; };
+    measure();
+
+    // высота / ширина каждого фото — считаем один раз (из атрибутов, их пишет render.py)
+    var ratios = Array.prototype.map.call(imgs, function (im) {
+      var w = +im.getAttribute('width');
+      var h = +im.getAttribute('height');
+      return w && h ? h / w : 0;
+    });
 
     function fit(p) {
       var i = Math.min(count - 1, Math.floor(p));
-      var a = ratio(i);
-      var b = ratio(Math.min(count - 1, i + 1));
+      var a = ratios[i];
+      var b = ratios[Math.min(count - 1, i + 1)];
       if (!a || !b) return;
       media.style.aspectRatio = String(1 / (a + (b - a) * (p - i)));
     }
 
     function update() {
       queued = false;
-      var w = track.clientWidth;
-      if (!w) return;
-      var p = Math.max(0, Math.min(count - 1, track.scrollLeft / w));
+      if (!width) { measure(); if (!width) return; }
+      var p = Math.max(0, Math.min(count - 1, track.scrollLeft / width));
       fit(p);
       var i = Math.round(p);
       if (i === current) return;
@@ -144,7 +160,7 @@
 
     function go(step) {
       var i = Math.max(0, Math.min(count - 1, current + step));
-      track.scrollTo({ left: i * track.clientWidth, behavior: calm ? 'auto' : 'smooth' });
+      track.scrollTo({ left: i * width, behavior: calm ? 'auto' : 'smooth' });
     }
 
     function queue() {
@@ -153,10 +169,10 @@
 
     track.addEventListener('scroll', queue, { passive: true });
     window.addEventListener('resize', function () {
-      track.scrollLeft = Math.max(0, current) * track.clientWidth;
+      measure();
+      track.scrollLeft = Math.max(0, current) * width;
       queue();
     });
-    Array.prototype.forEach.call(imgs, function (im) { im.addEventListener('load', queue); });
     if (prev) prev.addEventListener('click', function () { go(-1); });
     if (next) next.addEventListener('click', function () { go(1); });
     track.addEventListener('keydown', function (e) {

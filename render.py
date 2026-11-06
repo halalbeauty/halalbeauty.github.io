@@ -128,45 +128,51 @@ def image_size(src):
 def work(block):
     """Карточка с каруселью: фото листаются свайпом (CSS scroll-snap), script.js рисует индикатор.
 
-    Рамка берёт пропорции первого фото, а при свайпе script.js плавно подгоняет её высоту
-    под соседнее фото, так что каждое видно целиком. Подпись и индикатор лежат под рамкой."""
+    Лента (.work-track) всегда одного размера — по самому высокому фото, поэтому при свайпе
+    она не пересчитывается и не перебивает жест. Меняется только рамка-окно (.work-media):
+    script.js подгоняет её высоту под фото, а фото в ленте стоят по центру. Место под самое
+    высокое фото зарезервировано в карточке (--r), поэтому остальная страница не прыгает."""
     title = block["title"].strip()
     photos = block["photos"]
     many = len(photos) > 1
-    size = image_size(photos[0])
-    ratio = ' style="aspect-ratio: %d / %d"' % size if size else ""
+    sizes = [image_size(src) for src in photos]
+    first = sizes[0]
+    ratio = ' style="aspect-ratio: %d / %d"' % first if first else ""
+    tallest = max((h / float(w) for w, h in sizes if w and h), default=None)
+    var = ' style="--r: %.4f"' % tallest if tallest else ""
     out = [
-        '<article class="work">',
-        '  <div class="work-media"%s>' % ratio,
-        '    <div class="work-track" tabindex="0" role="group" aria-roledescription="carousel" aria-label="%s">'
+        '<article class="work"%s>' % var,
+        '  <div class="work-live">',
+        '    <div class="work-media"%s>' % ratio,
+        '      <div class="work-track" tabindex="0" role="group" aria-roledescription="carousel" aria-label="%s">'
         % attr(title),
     ]
     for i, src in enumerate(photos):
         alt = "%s, фото %d из %d" % (title, i + 1, len(photos)) if many else title
-        dims = image_size(src)
-        # width/height нужны script.js: по ним рамка плавно меняет высоту при свайпе
-        wh = ' width="%d" height="%d"' % dims if dims else ""
+        # width/height нужны script.js: по ним рамка меняет высоту при свайпе
+        wh = ' width="%d" height="%d"' % sizes[i] if sizes[i] else ""
         out.append(
-            '      <img class="work-slide" src="%s" alt="%s"%s loading="lazy" decoding="async" draggable="false">'
+            '        <img class="work-slide" src="%s" alt="%s"%s loading="lazy" decoding="async" draggable="false">'
             % (attr(src), attr(alt), wh)
         )
-    out.append("    </div>")
+    out.append("      </div>")
     if many:
         out.append(
-            '    <button type="button" class="work-nav prev" aria-label="Предыдущее фото" disabled>%s</button>'
+            '      <button type="button" class="work-nav prev" aria-label="Предыдущее фото" disabled>%s</button>'
             % (CHEVRON % "M15 5l-7 7 7 7")
         )
         out.append(
-            '    <button type="button" class="work-nav next" aria-label="Следующее фото">%s</button>'
+            '      <button type="button" class="work-nav next" aria-label="Следующее фото">%s</button>'
             % (CHEVRON % "M9 5l7 7-7 7")
         )
-    out.append("  </div>")
-    out.append('  <div class="work-cap">')
-    out.append('    <h3 class="work-title">%s</h3>' % esc(title))
+    out.append("    </div>")
+    out.append('    <div class="work-cap">')
+    out.append('      <h3 class="work-title">%s</h3>' % esc(title))
     if many:
-        out.append('    <div class="work-bars" aria-hidden="true">%s</div>' % "".join(
+        out.append('      <div class="work-bars" aria-hidden="true">%s</div>' % "".join(
             '<i class="on"></i>' if i == 0 else "<i></i>" for i in range(len(photos))
         ))
+    out.append("    </div>")
     out.append("  </div>")
     out.append("</article>")
     return out
