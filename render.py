@@ -15,6 +15,7 @@ import io
 import json
 import os
 import re
+import struct
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -95,36 +96,75 @@ CHEVRON = (
 )
 
 
+def image_size(src):
+    """(ширина, высота) фото из файла в репозитории или None. Читаем заголовок JPEG/PNG сами — без Pillow."""
+    path = os.path.normpath(os.path.join(ROOT, src))
+    if not path.startswith(ROOT + os.sep):
+        return None
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+    except OSError:
+        return None
+    if data[:8] == b"\x89PNG\r\n\x1a\n" and len(data) >= 24:
+        return struct.unpack(">II", data[16:24])
+    if data[:2] == b"\xff\xd8":
+        i = 2
+        while i + 9 < len(data):
+            if data[i] != 0xFF:
+                i += 1
+                continue
+            marker = data[i + 1]
+            if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD7 or marker == 0xFF:
+                i += 2 if marker != 0xFF else 1
+                continue
+            if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+                h, w = struct.unpack(">HH", data[i + 5:i + 9])
+                return (w, h) if w and h else None
+            i += 2 + struct.unpack(">H", data[i + 2:i + 4])[0]
+    return None
+
+
 def work(block):
-    """Карточка с каруселью: фото листаются свайпом (CSS scroll-snap), script.js рисует индикатор."""
+    """Карточка с каруселью: фото листаются свайпом (CSS scroll-snap), script.js рисует индикатор.
+
+    Рамка берёт пропорции первого фото, а сами фото показываются целиком (без обрезки);
+    подпись и индикатор лежат под рамкой и фото не закрывают."""
     title = block["title"].strip()
     photos = block["photos"]
     many = len(photos) > 1
+    size = image_size(photos[0])
+    ratio = ' style="aspect-ratio: %d / %d"' % size if size else ""
     out = [
         '<article class="work">',
-        '  <div class="work-track" tabindex="0" role="group" aria-roledescription="carousel" aria-label="%s">'
+        '  <div class="work-media"%s>' % ratio,
+        '    <div class="work-track" tabindex="0" role="group" aria-roledescription="carousel" aria-label="%s">'
         % attr(title),
     ]
     for i, src in enumerate(photos):
         alt = "%s, фото %d из %d" % (title, i + 1, len(photos)) if many else title
         out.append(
-            '    <img class="work-slide" src="%s" alt="%s" loading="lazy" decoding="async" draggable="false">'
+            '      <img class="work-slide" src="%s" alt="%s" loading="lazy" decoding="async" draggable="false">'
             % (attr(src), attr(alt))
         )
-    out.append("  </div>")
+    out.append("    </div>")
     if many:
-        out.append('  <div class="work-bars" aria-hidden="true">%s</div>' % "".join(
-            '<i class="on"></i>' if i == 0 else "<i></i>" for i in range(len(photos))
-        ))
         out.append(
-            '  <button type="button" class="work-nav prev" aria-label="Предыдущее фото" disabled>%s</button>'
+            '    <button type="button" class="work-nav prev" aria-label="Предыдущее фото" disabled>%s</button>'
             % (CHEVRON % "M15 5l-7 7 7 7")
         )
         out.append(
-            '  <button type="button" class="work-nav next" aria-label="Следующее фото">%s</button>'
+            '    <button type="button" class="work-nav next" aria-label="Следующее фото">%s</button>'
             % (CHEVRON % "M9 5l7 7-7 7")
         )
-    out.append('  <h3 class="work-title">%s</h3>' % esc(title))
+    out.append("  </div>")
+    out.append('  <div class="work-cap">')
+    out.append('    <h3 class="work-title">%s</h3>' % esc(title))
+    if many:
+        out.append('    <div class="work-bars" aria-hidden="true">%s</div>' % "".join(
+            '<i class="on"></i>' if i == 0 else "<i></i>" for i in range(len(photos))
+        ))
+    out.append("  </div>")
     out.append("</article>")
     return out
 
