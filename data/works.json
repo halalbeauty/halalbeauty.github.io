@@ -1,0 +1,45 @@
+{
+  "blocks": [
+    {
+      "id": "w-manikyur",
+      "title": "Маникюр",
+      "photos": [
+        "photos/works/manikyur-1.jpg",
+        "photos/works/manikyur-2.jpg"
+      ]
+    },
+    {
+      "id": "w-pedikyur",
+      "title": "Педикюр",
+      "photos": [
+        "photos/works/pedikyur-1.jpg",
+        "photos/works/pedikyur-2.jpg",
+        "photos/works/pedikyur-3.jpg"
+      ]
+    },
+    {
+      "id": "w-hna",
+      "title": "Роспись хной",
+      "photos": [
+        "photos/works/hna-1.jpg",
+        "photos/works/hna-2.jpg"
+      ]
+    },
+    {
+      "id": "w-volosy",
+      "title": "Окрашивание волос",
+      "photos": [
+        "photos/works/volosy-1.jpg",
+        "photos/works/volosy-2.jpg"
+      ]
+    },
+    {
+      "id": "w-lico",
+      "title": "Чистка лица",
+      "photos": [
+        "photos/works/lico-1.jpg",
+        "photos/works/lico-2.jpg"
+      ]
+    }
+  ]
+}

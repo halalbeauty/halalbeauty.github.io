@@ -1,9 +1,10 @@
-/* Админка прайса Halal Beauty.
+/* Админка сайта Halal Beauty: прайс и блоки «Наши работы».
  *
- * Вход — через GitHub (сервис входа в oauth/worker.js). Прайс читается и
- * записывается прямо в data/services.json репозитория через GitHub API от имени
- * вошедшего человека, поэтому сохранить может только тот, у кого есть доступ
- * на запись. После сохранения workflow пересобирает index.html (render.py).
+ * Вход — через GitHub (сервис входа в oauth/worker.js). Данные читаются и
+ * записываются прямо в репозиторий (data/services.json, data/works.json и
+ * фото в photos/works/) через GitHub API от имени вошедшего человека, поэтому
+ * сохранить может только тот, у кого есть доступ на запись. После сохранения
+ * workflow пересобирает index.html (render.py).
  *
  * На localhost админка открывается без входа и ничего не сохраняет — для проверки вёрстки.
  */
@@ -13,6 +14,10 @@
   var REPO = 'halalbeauty/halalbeauty.github.io';
   var BRANCH = 'main';
   var FILE = 'data/services.json';
+  var WORKS_FILE = 'data/works.json';
+  var PHOTO_DIR = 'photos/works/';
+  var MAX_SIDE = 1600;     // длинная сторона фото после сжатия, px
+  var JPEG_QUALITY = 0.82;
   var AUTH = 'https://halalbeauty-auth.kazakhbaimeyrzhan.workers.dev';
   var TOKEN_KEY = 'hb_admin_token';
   var LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -20,7 +25,14 @@
   var token = null;
   var data = null;
   var sha = null;
-  var dirty = false;
+  var works = null;        // { blocks: [{ id, title, hidden?, photos: [путь] }] }
+  var worksSha = null;     // null — файла в репозитории ещё нет
+  var savedPhotos = [];    // фото, которые сейчас лежат в репозитории и привязаны к блокам
+  var pending = {};        // путь → { blob, url, done }: загруженные в админке, но ещё не отправленные фото
+  var view = 'price';
+  var priceDirty = false;
+  var worksDirty = false;
+  var dirty = false;       // есть что сохранять хотя бы в одном разделе
   var saving = false;
   var active = 0;
   var openRows = new WeakSet();
@@ -75,15 +87,31 @@
     $('savebar').hidden = name !== 'editor';
   }
 
-  function setDirty(v) {
-    dirty = v;
+  function refreshDirty() {
+    dirty = priceDirty || worksDirty;
     var st = $('save-status');
-    st.textContent = v ? 'Есть несохранённые изменения' : 'Нет изменений';
-    st.className = 'adm-save-status' + (v ? ' dirty' : '');
-    $('save').disabled = !v || saving;
+    st.textContent = dirty ? 'Есть несохранённые изменения' : 'Нет изменений';
+    st.className = 'adm-save-status' + (dirty ? ' dirty' : '');
+    $('save').disabled = !dirty || saving;
+    Array.prototype.forEach.call($('views').children, function (b) {
+      b.classList.toggle('dirty', b.getAttribute('data-view') === 'price' ? priceDirty : worksDirty);
+    });
   }
 
-  function touch() { if (!dirty) setDirty(true); }
+  function setDirty(v) { priceDirty = v; refreshDirty(); }
+  function setWorksDirty(v) { worksDirty = v; refreshDirty(); }
+
+  function touch() { if (!priceDirty) setDirty(true); }
+  function touchWorks() { if (!worksDirty) setWorksDirty(true); }
+
+  function setView(v) {
+    view = v;
+    $('view-price').hidden = v !== 'price';
+    $('view-works').hidden = v !== 'works';
+    Array.prototype.forEach.call($('views').children, function (b) {
+      b.setAttribute('aria-selected', String(b.getAttribute('data-view') === v));
+    });
+  }
 
   window.addEventListener('beforeunload', function (e) {
     if (dirty) { e.preventDefault(); e.returnValue = ''; }
@@ -133,8 +161,12 @@
   function logout() {
     token = null;
     data = null;
+    works = null;
+    pending = {};
     store(TOKEN_KEY, null);
-    setDirty(false);
+    priceDirty = false;
+    worksDirty = false;
+    refreshDirty();
     show('login');
   }
 
@@ -171,17 +203,30 @@
 
   /* ---------- Загрузка ---------- */
 
+  function afterLoad() {
+    active = Math.min(active, data.tabs.length - 1);
+    savedPhotos = allPhotos(works);
+    priceDirty = false;
+    worksDirty = false;
+    refreshDirty();
+    show('editor');
+    render();
+    renderWorks();
+  }
+
   function start() {
     show('loading');
-    $('loading-text').textContent = 'Загружаем прайс…';
+    $('loading-text').textContent = 'Загружаем данные…';
 
     if (LOCAL) {
-      fetch('../' + FILE).then(function (r) { return r.json(); }).then(function (d) {
-        data = d;
+      var json = function (file, fallback) {
+        return fetch('../' + file).then(function (r) { return r.json(); }).catch(function () { return fallback; });
+      };
+      Promise.all([json(FILE), json(WORKS_FILE, { blocks: [] })]).then(function (r) {
+        data = r[0];
+        works = r[1];
         active = 0;
-        setDirty(false);
-        show('editor');
-        render();
+        afterLoad();
       });
       return;
     }
@@ -191,13 +236,19 @@
         show('denied');
         return null;
       }
-      return gh('/repos/' + REPO + '/contents/' + FILE + '?ref=' + BRANCH).then(function (f) {
-        sha = f.sha;
-        data = JSON.parse(b64ToUtf8(f.content));
-        active = Math.min(active, data.tabs.length - 1);
-        setDirty(false);
-        show('editor');
-        render();
+      var price = gh('/repos/' + REPO + '/contents/' + FILE + '?ref=' + BRANCH);
+      // works.json может ещё не существовать — тогда начинаем с пустого списка
+      var wk = gh('/repos/' + REPO + '/contents/' + WORKS_FILE + '?ref=' + BRANCH).catch(function (err) {
+        if (err.status === 404) return null;
+        throw err;
+      });
+      return Promise.all([price, wk]).then(function (r) {
+        sha = r[0].sha;
+        data = JSON.parse(b64ToUtf8(r[0].content));
+        worksSha = r[1] ? r[1].sha : null;
+        works = r[1] ? JSON.parse(b64ToUtf8(r[1].content)) : { blocks: [] };
+        if (!works.blocks) works.blocks = [];
+        afterLoad();
       });
     }).catch(function (err) {
       if (!token) return;
@@ -206,7 +257,7 @@
         return;
       }
       show('loading');
-      $('loading-text').textContent = 'Не получилось загрузить прайс: ' + err.message;
+      $('loading-text').textContent = 'Не получилось загрузить данные: ' + err.message;
     });
   }
 
@@ -252,44 +303,160 @@
     return { out: out, problems: problems };
   }
 
+  function cleanWorks() {
+    var problems = [];
+    var out = { blocks: works.blocks.map(function (b) {
+      var block = { id: b.id, title: b.title.trim() };
+      if (b.hidden) block.hidden = true;
+      block.photos = b.photos.slice();
+      return block;
+    }) };
+    out.blocks.forEach(function (b) {
+      if (!b.title) problems.push('у одного из блоков в «Наших работах» нет названия');
+      else if (!b.photos.length && !b.hidden) {
+        problems.push('в блоке «' + b.title + '» нет фото — добавьте фото или уберите галочку «Показывать»');
+      }
+    });
+    return { out: out, problems: problems };
+  }
+
+  function allPhotos(w) {
+    return w.blocks.reduce(function (all, b) { return all.concat(b.photos); }, []);
+  }
+
+  function blobToB64(blob) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(String(r.result).split(',')[1]); };
+      r.onerror = function () { reject(new Error('не удалось прочитать фото')); };
+      r.readAsDataURL(blob);
+    });
+  }
+
+  // Подряд идущие коммиты в одну ветку изредка получают 409 — повторяем один раз
+  function retry409(fn) {
+    return fn().catch(function (err) {
+      if (err.status !== 409) throw err;
+      return new Promise(function (r) { setTimeout(r, 900); }).then(fn);
+    });
+  }
+
+  function setBusy(text) { $('save').textContent = text; }
+
+  function savePrice(out) {
+    return retry409(function () {
+      return gh('/repos/' + REPO + '/contents/' + FILE, {
+        method: 'PUT',
+        body: JSON.stringify({
+          message: 'Прайс: правки через админку',
+          content: utf8ToB64(JSON.stringify(out, null, 2) + '\n'),
+          sha: sha,
+          branch: BRANCH
+        })
+      });
+    }).then(function (res) {
+      sha = res.content.sha;
+      data = out;
+      setDirty(false);
+      render();
+    });
+  }
+
+  function deleteFile(path) {
+    // Лишний файл в репозитории — не беда, поэтому ошибки здесь не показываем
+    return gh('/repos/' + REPO + '/contents/' + path + '?ref=' + BRANCH).then(function (f) {
+      return gh('/repos/' + REPO + '/contents/' + path, {
+        method: 'DELETE',
+        body: JSON.stringify({ message: 'Работы: удалено фото', sha: f.sha, branch: BRANCH })
+      });
+    }).catch(function () { /* пусто */ });
+  }
+
+  function saveWorks(out) {
+    var used = allPhotos(out);
+    var todo = used.filter(function (p) { return pending[p] && !pending[p].done; });
+    var n = 0;
+    var chain = Promise.resolve();
+
+    // 1. Фото. Файлы, на которые пока никто не ссылается, сайту не мешают
+    todo.forEach(function (path) {
+      chain = chain.then(function () {
+        setBusy('Загружаем фото ' + (++n) + ' из ' + todo.length + '…');
+        return blobToB64(pending[path].blob).then(function (b64) {
+          return retry409(function () {
+            return gh('/repos/' + REPO + '/contents/' + path, {
+              method: 'PUT',
+              body: JSON.stringify({ message: 'Работы: новое фото', content: b64, branch: BRANCH })
+            });
+          });
+        }).then(function () { pending[path].done = true; });
+      });
+    });
+
+    // 2. works.json — после него сайт пересоберётся
+    chain = chain.then(function () {
+      setBusy('Сохраняем…');
+      var body = {
+        message: 'Работы: правки через админку',
+        content: utf8ToB64(JSON.stringify(out, null, 2) + '\n'),
+        branch: BRANCH
+      };
+      if (worksSha) body.sha = worksSha;
+      return retry409(function () {
+        return gh('/repos/' + REPO + '/contents/' + WORKS_FILE, { method: 'PUT', body: JSON.stringify(body) });
+      });
+    }).then(function (res) {
+      worksSha = res.content.sha;
+      works = out;
+      var gone = savedPhotos.filter(function (p) { return used.indexOf(p) < 0; });
+      savedPhotos = used;
+      setWorksDirty(false);
+      renderWorks();
+
+      // 3. Убираем из репозитория фото, которых больше нет ни в одном блоке
+      var del = Promise.resolve();
+      gone.forEach(function (p) {
+        del = del.then(function () { setBusy('Убираем старые фото…'); return deleteFile(p); });
+      });
+      return del;
+    });
+    return chain;
+  }
+
   function save() {
     if (saving || !dirty) return;
-    var c = clean();
-    if (c.problems.length) {
-      toast('Заполните: ' + c.problems[0] + (c.problems.length > 1 ? ' (и ещё ' + (c.problems.length - 1) + ')' : ''), true);
+    var c = priceDirty ? clean() : null;
+    var w = worksDirty ? cleanWorks() : null;
+    var problems = (c ? c.problems : []).concat(w ? w.problems : []);
+    if (problems.length) {
+      toast('Заполните: ' + problems[0] + (problems.length > 1 ? ' (и ещё ' + (problems.length - 1) + ')' : ''), true);
+      setView(c && c.problems.length ? 'price' : 'works');
       markEmpty();
       return;
     }
     if (LOCAL) {
-      window.hbLocalSave = JSON.stringify(c.out, null, 2) + '\n';
+      if (c) window.hbLocalSave = JSON.stringify(c.out, null, 2) + '\n';
+      if (w) window.hbLocalWorks = JSON.stringify(w.out, null, 2) + '\n';
       toast('Локальная проверка: ничего не отправлено', false);
       return;
     }
     saving = true;
     $('save').disabled = true;
-    $('save').textContent = 'Сохраняем…';
-    gh('/repos/' + REPO + '/contents/' + FILE, {
-      method: 'PUT',
-      body: JSON.stringify({
-        message: 'Прайс: правки через админку',
-        content: utf8ToB64(JSON.stringify(c.out, null, 2) + '\n'),
-        sha: sha,
-        branch: BRANCH
-      })
-    }).then(function (res) {
-      sha = res.content.sha;
-      data = c.out;
+    setBusy('Сохраняем…');
+    var chain = Promise.resolve();
+    if (c) chain = chain.then(function () { return savePrice(c.out); });
+    if (w) chain = chain.then(function () { return saveWorks(w.out); });
+    chain.then(function () {
       saving = false;
-      $('save').textContent = 'Сохранить';
-      setDirty(false);
-      render();
+      setBusy('Сохранить');
+      refreshDirty();
       toast('Сохранено. На сайте изменения появятся через 1–2 минуты.');
     }).catch(function (err) {
       saving = false;
-      $('save').textContent = 'Сохранить';
-      $('save').disabled = !dirty;
+      setBusy('Сохранить');
+      refreshDirty();
       if (err.status === 409 || err.status === 422) {
-        toast('Прайс уже изменили в другом месте. Скопируйте свои правки, обновите страницу и внесите их заново.', true);
+        toast('Данные уже изменили в другом месте. Скопируйте свои правки, обновите страницу и внесите их заново.', true);
       } else if (err.status === 403 || err.status === 404) {
         toast('Нет прав на сохранение (' + err.message + ')', true);
       } else {
@@ -342,7 +509,7 @@
       oninput: function () {
         obj[key] = input.value;
         if (opts.required) input.classList.toggle('bad', !input.value.trim());
-        touch();
+        (opts.touch || touch)();
       }
     });
     return input;
@@ -504,6 +671,159 @@
     }, '+ Добавить блок'));
   }
 
+  /* ---------- Наши работы ---------- */
+
+  function newName() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function decodeViaImg(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('не открывается')); };
+      img.src = url;
+    });
+  }
+
+  // Сжимаем в браузере: телефонное фото на 5–10 МБ не должно попасть на сайт как есть
+  function prepare(file) {
+    var decoded = window.createImageBitmap
+      ? createImageBitmap(file).catch(function () { return decodeViaImg(file); })
+      : decodeViaImg(file);
+    return decoded.then(function (img) {
+      var w = img.naturalWidth || img.width;
+      var hgt = img.naturalHeight || img.height;
+      var k = Math.min(1, MAX_SIDE / Math.max(w, hgt));
+      var cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round(w * k));
+      cv.height = Math.max(1, Math.round(hgt * k));
+      var ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff'; // у PNG с прозрачностью фон иначе станет чёрным
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      if (img.close) img.close();
+      return new Promise(function (resolve, reject) {
+        cv.toBlob(function (blob) {
+          if (blob) resolve(blob); else reject(new Error('не сжимается'));
+        }, 'image/jpeg', JPEG_QUALITY);
+      });
+    });
+  }
+
+  function previewUrl(src) {
+    return pending[src] ? pending[src].url : '../' + src;
+  }
+
+  // Фото, которое ни разу не отправляли в репозиторий, просто забываем
+  function forget(src) {
+    var p = pending[src];
+    if (p && !p.done) {
+      URL.revokeObjectURL(p.url);
+      delete pending[src];
+    }
+  }
+
+  function addPhotos(block, files) {
+    var failed = [];
+    var added = 0;
+    var chain = Promise.resolve();
+    toast('Обрабатываем фото…');
+    files.forEach(function (file) {
+      chain = chain.then(function () {
+        return prepare(file).then(function (blob) {
+          var path = PHOTO_DIR + newName() + '.jpg';
+          pending[path] = { blob: blob, url: URL.createObjectURL(blob), done: false };
+          block.photos.push(path);
+          added++;
+        }, function () { failed.push(file.name); });
+      });
+    });
+    chain.then(function () {
+      if (added) touchWorks();
+      renderWorks();
+      if (failed.length) {
+        toast('Не удалось открыть: ' + failed.join(', ') + '. Подойдут JPG, PNG и WebP.', true);
+      } else {
+        $('toast').hidden = true;
+      }
+    });
+  }
+
+  function renderPhoto(block, src, i) {
+    var last = block.photos.length - 1;
+    return h('li', { class: 'adm-photo' },
+      h('img', { src: previewUrl(src), alt: 'Фото ' + (i + 1), loading: 'lazy', draggable: 'false' }),
+      i === 0 && last > 0 ? h('span', { class: 'adm-photo-tag', text: 'Обложка' }) : null,
+      h('div', { class: 'adm-photo-tools' },
+        iconBtn('←', 'Сдвинуть влево', function () { if (move(block.photos, i, -1)) { touchWorks(); renderWorks(); } }),
+        iconBtn('→', 'Сдвинуть вправо', function () { if (move(block.photos, i, 1)) { touchWorks(); renderWorks(); } }),
+        iconBtn('×', 'Убрать фото', function () {
+          forget(src);
+          block.photos.splice(i, 1);
+          touchWorks();
+          renderWorks();
+        }, 'danger')
+      )
+    );
+  }
+
+  function renderBlock(block, bi) {
+    var head = h('div', { class: 'adm-group-head' },
+      field(block, 'title', {
+        class: 'adm-field-title', placeholder: 'Название блока, например «Маникюр»',
+        label: 'Название блока', required: true, touch: touchWorks
+      }),
+      h('div', { class: 'adm-ico-row' },
+        h('label', { class: 'adm-wide', title: 'Скрытый блок остаётся в админке, но не показывается на сайте' },
+          h('input', {
+            type: 'checkbox',
+            checked: block.hidden ? null : true,
+            onchange: function (e) { block.hidden = !e.target.checked; touchWorks(); renderWorks(); }
+          }), 'Показывать'),
+        iconBtn('↑', 'Блок выше', function () { if (move(works.blocks, bi, -1)) { touchWorks(); renderWorks(); } }),
+        iconBtn('↓', 'Блок ниже', function () { if (move(works.blocks, bi, 1)) { touchWorks(); renderWorks(); } }),
+        iconBtn('×', 'Удалить блок', function () {
+          var n = block.photos.length;
+          if (!confirm('Удалить блок «' + (block.title.trim() || 'без названия') + '»' + (n ? ' вместе с фото (' + n + ')' : '') + '?')) return;
+          block.photos.forEach(forget);
+          works.blocks.splice(bi, 1);
+          touchWorks();
+          renderWorks();
+        }, 'danger')
+      )
+    );
+
+    var strip = h('ul', { class: 'adm-photos' });
+    block.photos.forEach(function (src, i) { strip.appendChild(renderPhoto(block, src, i)); });
+    var input = h('input', {
+      type: 'file', accept: 'image/*', multiple: true, class: 'adm-file',
+      onchange: function () {
+        var files = Array.prototype.slice.call(input.files);
+        input.value = '';
+        if (files.length) addPhotos(block, files);
+      }
+    });
+    strip.appendChild(h('li', { class: 'adm-photo-add' },
+      h('label', null, block.photos.length ? '+ Ещё фото' : '+ Добавить фото', input)));
+
+    return h('div', { class: 'menu-group adm-block' + (block.hidden ? ' is-hidden' : '') },
+      head,
+      block.hidden ? h('p', { class: 'adm-muted adm-hidden-note', text: 'Скрыт — на сайте не виден.' }) : null,
+      strip
+    );
+  }
+
+  function renderWorks() {
+    var box = $('works-list');
+    box.textContent = '';
+    if (!works.blocks.length) {
+      box.appendChild(h('p', { class: 'adm-muted adm-empty', text: 'Пока нет ни одного блока. Добавьте первый, например «Маникюр», и загрузите в него фото.' }));
+    }
+    works.blocks.forEach(function (b, bi) { box.appendChild(renderBlock(b, bi)); });
+  }
+
   /* ---------- Старт ---------- */
 
   $('login').addEventListener('click', login);
@@ -513,6 +833,16 @@
   });
   $('denied-logout').addEventListener('click', logout);
   $('save').addEventListener('click', save);
+  Array.prototype.forEach.call($('views').children, function (b) {
+    b.addEventListener('click', function () { setView(b.getAttribute('data-view')); });
+  });
+  $('add-block').addEventListener('click', function () {
+    works.blocks.push({ id: 'w-' + newName(), title: '', photos: [] });
+    touchWorks();
+    renderWorks();
+    var titles = document.querySelectorAll('.adm-block .adm-field-title');
+    if (titles.length) titles[titles.length - 1].focus();
+  });
   $('add-tab').addEventListener('click', function () {
     data.tabs.push({ id: newId(), title: 'Новая категория', groups: [{ title: '', rows: [{ name: '', price: '' }] }] });
     active = data.tabs.length - 1;

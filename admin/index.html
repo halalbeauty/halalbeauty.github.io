@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#F5F5F7">
-<title>Halal Beauty — редактирование прайса</title>
+<title>Halal Beauty — редактирование сайта</title>
 <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +21,7 @@
       <img class="brand-mark" src="../logo-128.png" width="128" height="128" alt="">
       <span>Halal <em>Beauty</em></span>
     </a>
-    <span class="adm-bar-title">Редактирование прайса</span>
+    <span class="adm-bar-title">Редактирование сайта</span>
     <div class="adm-bar-actions" id="bar-actions" hidden>
       <a class="btn btn-plain" href="../" target="_blank" rel="noopener">Открыть сайт</a>
       <button class="btn btn-ghost" type="button" id="logout">Выйти</button>
@@ -36,7 +36,7 @@
     <div class="menu-group adm-card">
       <p class="eyebrow">Только для администратора</p>
       <h1 class="adm-h1">Вход</h1>
-      <p class="adm-muted">Войдите через GitHub. Менять прайс могут только те, у кого есть доступ к сайту.</p>
+      <p class="adm-muted">Войдите через GitHub. Менять сайт могут только те, у кого есть доступ к сайту.</p>
       <button class="btn btn-primary" type="button" id="login">Войти через GitHub</button>
       <p class="adm-error" id="login-error" hidden></p>
     </div>
@@ -44,7 +44,7 @@
 
   <!-- Загрузка / нет доступа / ошибка -->
   <section class="adm-screen" id="screen-loading">
-    <div class="menu-group adm-card"><p class="adm-muted" id="loading-text">Загружаем прайс…</p></div>
+    <div class="menu-group adm-card"><p class="adm-muted" id="loading-text">Загружаем данные…</p></div>
   </section>
 
   <section class="adm-screen" id="screen-denied" hidden>
@@ -57,16 +57,35 @@
 
   <!-- Редактор -->
   <section class="adm-screen" id="screen-editor" hidden>
-    <p class="adm-hint">
-      Нажмите на название или цену и поправьте. Изменения попадут на сайт только после кнопки
-      <b>«Сохранить»</b> внизу; на сайте они появятся через 1–2 минуты.
-    </p>
-    <div class="adm-tabs-row">
-      <div class="cat-nav" id="tabs" role="tablist" aria-label="Категории"></div>
-      <button class="adm-pill" type="button" id="add-tab">+ Категория</button>
+    <div class="adm-switch" id="views" role="tablist" aria-label="Раздел сайта">
+      <button type="button" role="tab" data-view="price" aria-selected="true">Прайс</button>
+      <button type="button" role="tab" data-view="works" aria-selected="false">Наши работы</button>
     </div>
-    <div id="tab-tools"></div>
-    <div class="menu cat-panel" id="panel"></div>
+
+    <!-- Прайс -->
+    <div id="view-price">
+      <p class="adm-hint">
+        Нажмите на название или цену и поправьте. Изменения попадут на сайт только после кнопки
+        <b>«Сохранить»</b> внизу; на сайте они появятся через 1–2 минуты.
+      </p>
+      <div class="adm-tabs-row">
+        <div class="cat-nav" id="tabs" role="tablist" aria-label="Категории"></div>
+        <button class="adm-pill" type="button" id="add-tab">+ Категория</button>
+      </div>
+      <div id="tab-tools"></div>
+      <div class="menu cat-panel" id="panel"></div>
+    </div>
+
+    <!-- Наши работы -->
+    <div id="view-works" hidden>
+      <p class="adm-hint">
+        Каждый блок — карточка на сайте с названием; если в нём несколько фото, их можно листать
+        свайпом. Фото сжимаются сами. Первое фото — обложка. Галочка <b>«Показывать»</b> временно
+        убирает блок с сайта, не удаляя его. Изменения попадут на сайт после <b>«Сохранить»</b>.
+      </p>
+      <div class="adm-works" id="works-list"></div>
+      <button type="button" class="adm-add adm-add-group" id="add-block">+ Добавить блок</button>
+    </div>
   </section>
 </main>
 

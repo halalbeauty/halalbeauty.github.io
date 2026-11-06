@@ -239,3 +239,105 @@
 @media (max-width: 560px) {
   .adm-group-head .adm-field-title { flex-basis: 100%; }
 }
+
+/* Переключатель разделов: прайс / работы */
+.adm-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 1.25rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.adm-switch button {
+  position: relative;
+  min-height: 40px;
+  padding: 0 1.3rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease;
+}
+.adm-switch button:hover { color: var(--ink); }
+.adm-switch button[aria-selected="true"] { background: var(--cta); color: var(--on-cta); }
+/* Точка: в этом разделе есть несохранённые правки */
+.adm-switch button.dirty::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #E0A23A;
+}
+
+/* Наши работы */
+.adm-works { display: grid; gap: 1rem; margin-bottom: 1rem; }
+.adm-empty { padding: 1.25rem 0; }
+.adm-block.is-hidden { opacity: .62; }
+.adm-hidden-note { margin: .6rem 0 0; font-size: .85rem; }
+
+.adm-photos {
+  list-style: none;
+  margin: .9rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: .6rem;
+}
+.adm-photo,
+.adm-photo-add {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.adm-photo img { width: 100%; height: 100%; object-fit: cover; }
+.adm-photo-tag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .62);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 600;
+}
+.adm-photo-tools {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+}
+.adm-photo-tools .adm-ico { width: 30px; height: 30px; font-size: .8rem; }
+
+.adm-photo-add { border: 1px dashed var(--line-strong); }
+.adm-photo-add:hover,
+.adm-photo-add:focus-within { border-color: var(--beige-dark); background: var(--surface); }
+.adm-photo-add label {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: .5rem;
+  text-align: center;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.adm-photo-add:hover label { color: var(--ink); }
+/* Сам input скрыт, но остаётся доступным с клавиатуры */
+.adm-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }

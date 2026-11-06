@@ -1,4 +1,4 @@
-/* Halal Beauty — меню, появление секций, табы */
+/* Halal Beauty — меню, появление секций, табы, карусели работ */
 (function () {
   'use strict';
 
@@ -91,5 +91,51 @@
       e.preventDefault();
       selectTab(tabs[next], true);
     });
+  });
+
+  /* ---------- Работы: карусели ----------
+     Листание — нативный scroll-snap (свайп работает и без скрипта);
+     здесь только индикатор, стрелки для мыши и клавиши ← →. */
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  Array.prototype.forEach.call(document.querySelectorAll('.work'), function (card) {
+    var track = card.querySelector('.work-track');
+    var bars = card.querySelectorAll('.work-bars i');
+    var prev = card.querySelector('.work-nav.prev');
+    var next = card.querySelector('.work-nav.next');
+    var count = bars.length;
+    var current = -1;
+    var queued = false;
+    if (!track || count < 2) return;
+
+    function update() {
+      queued = false;
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      i = Math.max(0, Math.min(count - 1, i));
+      if (i === current) return;
+      current = i;
+      Array.prototype.forEach.call(bars, function (bar, k) { bar.classList.toggle('on', k === i); });
+      if (prev) prev.disabled = i === 0;
+      if (next) next.disabled = i === count - 1;
+    }
+
+    function go(step) {
+      var i = Math.max(0, Math.min(count - 1, current + step));
+      track.scrollTo({ left: i * track.clientWidth, behavior: calm ? 'auto' : 'smooth' });
+    }
+
+    track.addEventListener('scroll', function () {
+      if (!queued) { queued = true; window.requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () {
+      track.scrollLeft = Math.max(0, current) * track.clientWidth;
+    });
+    if (prev) prev.addEventListener('click', function () { go(-1); });
+    if (next) next.addEventListener('click', function () { go(1); });
+    track.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+    });
+    update();
   });
 })();
