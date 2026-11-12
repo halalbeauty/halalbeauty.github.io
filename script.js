@@ -211,4 +211,18 @@
     });
     update();
   });
+  /* ---------- Обучение: раскрытие «Программы обучения» ----------
+     Анимация целиком в CSS (.plan-more.is-open); скрипт только переключает класс,
+     aria-expanded и подпись кнопки. Карточки раскрываются независимо друг от друга. */
+  Array.prototype.forEach.call(document.querySelectorAll('.plan-more'), function (box) {
+    var btn = box.querySelector('.plan-toggle');
+    var label = btn && btn.querySelector('span');
+    if (!btn || !label) return;
+    btn.addEventListener('click', function () {
+      var open = !box.classList.contains('is-open');
+      box.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      label.textContent = open ? 'Скрыть' : 'Программа обучения';
+    });
+  });
 })();

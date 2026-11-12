@@ -745,163 +745,313 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 
 /* ---------- Обучение ---------- */
 
-.training-details {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 6px);
-  box-shadow: var(--shadow);
-}
-
-.training-details > summary {
-  list-style: none;
-  cursor: pointer;
-  padding: 1.3rem clamp(1.1rem, 3vw, 1.6rem);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  border-radius: inherit;
-}
-
-.training-details > summary::-webkit-details-marker { display: none; }
-.training-details > summary:focus-visible {
-  outline: 2px solid var(--accent-ink);
-  outline-offset: 2px;
-}
-
-.training-sum-txt { display: grid; gap: .25rem; }
-.training-sum-title { font-weight: 600; font-size: 1.05rem; }
-.training-sum-hint { color: var(--ink-2); font-size: .875rem; }
-
-.training-sum-ic {
-  flex: none;
-  width: .6rem;
-  height: .6rem;
-  border-right: 2px solid var(--accent-ink);
-  border-bottom: 2px solid var(--accent-ink);
-  transform: rotate(45deg);
-  margin-bottom: .2rem;
-  transition: transform .2s ease;
-}
-
-.training-details[open] > summary { border-bottom: 1px solid var(--line); }
-.training-details[open] .training-sum-ic {
-  transform: rotate(-135deg);
-  margin-bottom: -.2rem;
-}
-
-.training {
+/* Три программы в духе тарифов ChatGPT: тёмно-нейтральные карточки, название и бейдж
+   сверху, крупный заголовок, сразу кнопка, ниже цена и список с иконками.
+   Средняя карточка выделена бежевой подсветкой. */
+.plans {
   display: grid;
-  gap: 1rem;
-  padding: clamp(1.1rem, 3vw, 1.6rem);
+  gap: 1.25rem;
+  align-items: start;
 }
 
 @media (min-width: 900px) {
-  .training {
-    grid-template-columns: minmax(0, 1fr) minmax(0, .8fr);
-    align-items: start;
-    gap: 1.5rem;
-  }
+  .plans { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
 }
 
-.training-main {
-  display: grid;
-  gap: 1rem;
-  align-content: start;
-}
-
-.training-prices {
-  display: grid;
-  gap: 1rem;
-}
-
-@media (min-width: 620px) {
-  .training-prices { grid-template-columns: 1fr 1fr; }
-}
-
-.tprice {
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 6px);
-  padding: 1.5rem;
-  display: grid;
-  gap: .35rem;
-  align-content: start;
-}
-
-.tprice h3 { font-size: 1.05rem; }
-.tprice-val {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--accent-ink);
-  line-height: 1.2;
-}
-.tprice-val span {
-  font-size: .85rem;
-  font-weight: 500;
-  color: var(--ink-2);
-}
-.tprice-note { color: var(--ink-2); font-size: .875rem; line-height: 1.6; }
-
-.training-facts {
-  list-style: none;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 6px);
-  padding: 1.5rem;
-  display: grid;
-  gap: .7rem;
-}
-
-@media (min-width: 620px) {
-  .training-facts { grid-template-columns: 1fr 1fr; gap: .7rem 1.4rem; }
-}
-
-.training-facts li {
-  display: grid;
-  grid-template-columns: 1.4rem minmax(0, 1fr);
-  gap: .6rem;
-  align-items: start;
-  color: var(--ink-2);
-  font-size: .9rem;
-  line-height: 1.55;
-}
-
-.training-note {
-  color: var(--ink-2);
-  font-size: .9rem;
-  line-height: 1.65;
-  padding: 1.1rem 1.3rem;
-  border: 1px dashed var(--line);
-  border-radius: calc(var(--radius) + 6px);
-}
-
-.training-cta {
-  background: var(--panel);
-  color: var(--on-panel);
-  border-radius: calc(var(--radius) + 6px);
-  padding: clamp(1.6rem, 3vw, 2rem);
-  display: grid;
-  gap: .8rem;
-  align-content: start;
-  position: sticky;
-  top: 100px;
-}
-
-.training-cta h3 { font-size: 1.3rem; }
-.training-cta p { color: var(--on-panel-muted); font-size: .925rem; line-height: 1.65; }
-.training-cta .btn-primary {
+.plan {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.4rem, 3vw, 2rem);
   background: var(--surface);
-  border-color: var(--surface);
-  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: 28px;
 }
-.training-cta .btn-primary:hover { background: var(--beige); border-color: var(--beige); }
-.training-cta .btn-plain { color: var(--on-panel-muted); }
-.training-cta .btn-plain:hover { color: var(--on-panel); }
 
-@media (max-width: 899px) {
-  .training-cta { position: static; }
+.plan-hot {
+  border: 1.5px solid var(--beige-dark);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--beige) 28%, var(--surface)) 0%, var(--surface) 70%);
+  box-shadow: var(--shadow);
 }
+
+/* Expert — старшая программа: матовое золото без глянца (мягкий градиент + едва заметное зерно).
+   Цвета текста переопределены локально: на золоте он тёмный в любой теме. */
+.plan-max {
+  --ink: #1A1409;
+  --ink-2: rgba(26, 20, 9, .74);
+  --line: rgba(26, 20, 9, .2);
+  --accent-ink: #3B2D14;
+  position: relative;
+  color: var(--ink);
+  border: 1.5px solid rgba(255, 244, 220, .55);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(90% 55% at 15% 0%, rgba(255, 247, 226, .38) 0%, rgba(255, 247, 226, 0) 70%),
+    linear-gradient(165deg, #DCC7A0 0%, #C9AE80 52%, #B39466 100%);
+  box-shadow:
+    0 28px 70px rgba(150, 118, 62, .38),
+    inset 0 1px 0 rgba(255, 250, 235, .6);
+}
+
+.plan-max .plan-badge { background: #1A1409; color: #E8D8B8; }
+
+.plan-max .plan-btn {
+  background: #1A1409;
+  border-color: #1A1409;
+  color: #F3E7CF;
+  box-shadow: 0 10px 26px rgba(26, 20, 9, .28);
+}
+.plan-max .plan-btn:hover { background: #000000; border-color: #000000; }
+
+.plan-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: 2.4rem;
+}
+
+.plan-code {
+  font-family: "Onest", "Golos Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.3vw, 1.85rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.plan-badge {
+  padding: .3rem .8rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--beige) 45%, transparent);
+  color: var(--accent-ink);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.plan-name {
+  margin: 1.4rem 0 1.4rem;
+  min-height: 2.5em;
+  font-family: "Onest", "Golos Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.25rem, 1.9vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.plan-btn { width: 100%; }
+
+.plan-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .2rem .6rem;
+  margin-top: 1.6rem;
+}
+.plan-price b {
+  font-size: clamp(2rem, 3vw, 2.4rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.plan-price small { color: var(--ink-2); font-size: .9rem; }
+
+.plan-solo { margin-top: .3rem; color: var(--ink-2); font-size: .95rem; }
+.plan-solo b { color: var(--ink); font-weight: 600; }
+
+/* Список с иконками */
+.plan-facts {
+  display: grid;
+  gap: .95rem;
+  margin-top: 1.6rem;
+}
+.plan-facts li {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: .8rem;
+  align-items: start;
+  font-size: .95rem;
+  line-height: 1.45;
+}
+
+.plan-facts li > i {
+  width: 1.4rem;
+  height: 1.4rem;
+  background-color: var(--accent-ink);
+  -webkit-mask: var(--ic) center / contain no-repeat;
+  mask: var(--ic) center / contain no-repeat;
+}
+.ic-check { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+.ic-time  { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.5V12l3 2'/%3E%3C/svg%3E"); }
+.ic-practice { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='3.5'/%3E%3Cpath d='M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5'/%3E%3C/svg%3E"); }
+
+/* Раскрывающаяся программа — как в тарифах JUZQ: список выезжает над строкой «+ Программа обучения»,
+   пункты появляются по очереди, плюс поворачивается в крестик. Высота анимируется через
+   grid-template-rows (0fr → 1fr), поэтому не нужен хак с max-height. Без JS список виден всегда. */
+.plan-more {
+  margin-top: auto;
+  padding-top: 1.4rem;
+}
+
+.plan-more-wrap { display: block; }
+
+.js .plan-more-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+  transition:
+    grid-template-rows .6s cubic-bezier(.4, 0, .2, 1),
+    opacity .45s cubic-bezier(.4, 0, .2, 1),
+    transform .6s cubic-bezier(.4, 0, .2, 1),
+    visibility 0s linear .6s;
+}
+.js .plan-more.is-open .plan-more-wrap {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition-delay: 0s, 0s, 0s, 0s;
+}
+.js .plan-more-inner { min-height: 0; overflow: hidden; }
+
+/* Заголовки, пункты и примечание: поочерёдное появление */
+.js .plan-more-inner > p,
+.js .plan-list li {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.js .plan-more.is-open .plan-more-inner > p,
+.js .plan-more.is-open .plan-list li {
+  opacity: 1;
+  transform: none;
+  transition: opacity .45s cubic-bezier(.4, 0, .2, 1), transform .45s cubic-bezier(.4, 0, .2, 1);
+}
+.js .plan-more.is-open .plan-more-inner > p:nth-child(1) { transition-delay: .08s; }
+.js .plan-more.is-open .plan-list li:nth-child(1)  { transition-delay: .12s; }
+.js .plan-more.is-open .plan-list li:nth-child(2)  { transition-delay: .17s; }
+.js .plan-more.is-open .plan-list li:nth-child(3)  { transition-delay: .22s; }
+.js .plan-more.is-open .plan-list li:nth-child(4)  { transition-delay: .27s; }
+.js .plan-more.is-open .plan-list li:nth-child(5)  { transition-delay: .32s; }
+.js .plan-more.is-open .plan-list li:nth-child(6)  { transition-delay: .37s; }
+.js .plan-more.is-open .plan-list li:nth-child(7)  { transition-delay: .42s; }
+.js .plan-more.is-open .plan-list li:nth-child(n+8) { transition-delay: .47s; }
+.js .plan-more.is-open .plan-note { transition-delay: .5s; }
+
+/* Строка-переключатель */
+.plan-toggle {
+  display: none;
+  width: 100%;
+  align-items: center;
+  gap: .7rem;
+  padding: 1.1rem 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .3s ease;
+}
+.js .plan-toggle { display: flex; }
+.plan-toggle:active { transform: scale(.98); }
+
+.plan-toggle > i {
+  position: relative;
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--beige) 35%, transparent);
+  transition: transform .3s ease, background-color .3s ease;
+}
+.plan-toggle > i::before,
+.plan-toggle > i::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: .62rem;
+  height: 1.6px;
+  border-radius: 1px;
+  background: var(--accent-ink);
+  transform: translate(-50%, -50%);
+  transition: background-color .3s ease;
+}
+.plan-toggle > i::after { transform: translate(-50%, -50%) rotate(90deg); }
+
+.plan-toggle:hover > i { background: var(--beige); transform: scale(1.1); }
+.plan-toggle:hover > i::before,
+.plan-toggle:hover > i::after { background: #111111; }
+.plan-more.is-open .plan-toggle > i { transform: rotate(45deg); }
+.plan-more.is-open .plan-toggle:hover > i { transform: rotate(45deg) scale(1.1); }
+
+.plan-toggle:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 4px; border-radius: 8px; }
+
+/* Отступ под списком появляется вместе с раскрытием */
+.plan-more-inner { transition: padding-bottom .6s cubic-bezier(.4, 0, .2, 1); }
+.plan-more.is-open .plan-more-inner { padding-bottom: 1.1rem; }
+
+.plan-h {
+  margin: 0 0 .55rem;
+  font-size: .8rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.plan-list + .plan-h { margin-top: 1.1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js .plan-more-wrap,
+  .js .plan-more-inner,
+  .js .plan-more-inner > p,
+  .js .plan-list li,
+  .plan-toggle,
+  .plan-toggle > i { transition: none !important; }
+}
+
+.plan-list { display: grid; gap: .45rem; }
+.plan-list li {
+  position: relative;
+  padding-left: 1.1rem;
+  color: var(--ink-2);
+  font-size: .9rem;
+  line-height: 1.5;
+}
+.plan-list li::before {
+  content: "";
+  position: absolute;
+  left: .1rem;
+  top: .62em;
+  width: .3rem;
+  height: .3rem;
+  border-radius: 50%;
+  background-color: var(--beige-dark);
+}
+
+.plan-note {
+  margin-top: .9rem;
+  color: var(--ink-2);
+  font-size: .85rem;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.plans-foot {
+  margin-top: 1.75rem;
+  text-align: center;
+  color: var(--ink-2);
+  font-size: .95rem;
+}
+.plans-foot a { color: var(--ink); text-underline-offset: 4px; }
 
 /* ---------- Мастера ---------- */
 
