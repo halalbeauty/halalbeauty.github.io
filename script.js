@@ -256,7 +256,6 @@
   'use strict';
 
   var PHOTO_DIR = 'images/masters/';
-  var FONTS_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Comfortaa:wght@400;500;600&display=swap';
 
   /* ================= ДАННЫЕ МАСТЕРОВ — править здесь =================
      photo  — файл в images/masters/ (нет файла → золотой круг с первой буквой)
@@ -562,9 +561,6 @@
     body.appendChild(outro);
     inner.appendChild(body);
     full.appendChild(inner);
-    var mark = el('span', 'tm-mark');
-    mark.setAttribute('aria-hidden', 'true');
-    full.appendChild(mark);
 
     var dim = el('span', 'tm-dim');
     dim.setAttribute('aria-hidden', 'true');
@@ -803,32 +799,9 @@
     resizeRaf = requestAnimationFrame(function () { resizeRaf = 0; measure(); });
   });
 
-  /* ---------- Шрифты только для этих карточек: грузим, когда ряд близко ---------- */
-  var fontsStarted = false;
-  function loadFonts() {
-    if (fontsStarted) return;
-    fontsStarted = true;
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = FONTS_URL;
-    link.addEventListener('load', function () {
-      if (!document.fonts || !document.fonts.load) { measure(); return; }
-      Promise.all([
-        document.fonts.load('600 20px "Cormorant Garamond"', 'Аб'),
-        document.fonts.load('italic 600 20px "Cormorant Garamond"', 'Аб'),
-        document.fonts.load('400 16px "Comfortaa"', 'Аб')
-      ]).then(measure, measure);
-    });
-    document.head.appendChild(link);
-  }
-  if ('IntersectionObserver' in window) {
-    var fio = new IntersectionObserver(function (entries) {
-      if (entries.some(function (en) { return en.isIntersecting; })) { loadFonts(); fio.disconnect(); }
-    }, { rootMargin: '1200px 0px' });
-    fio.observe(stage);
-  } else {
-    loadFonts();
-  }
+  /* ---------- Шрифты сайта: пересчитать высоту, когда они загрузятся ---------- */
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+  window.addEventListener('load', measure);
 
   /* ---------- Старт ---------- */
   measure();
