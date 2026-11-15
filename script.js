@@ -250,7 +250,8 @@
 /* ---------- Наши мастера: ряд «как на вешалке» ----------
    Одна дробная позиция pos догоняет target каждый кадр (requestAnimationFrame).
    Положение, ширина, масштаб, прозрачность, тень, затемнение и z-index каждой карточки
-   считаются непрерывно от d = i - pos, а не включаются классом. */
+   считаются непрерывно от d = i - pos, а не включаются классом.
+   Все карточки непрозрачные: «дальность» — это тёмный слой поверх и уменьшение. */
 (function () {
   'use strict';
 
@@ -420,9 +421,9 @@
 
   /* ---------- Геометрия ряда ---------- */
   var SC = [1, 0.92, 0.84, 0.78, 0.74];     // масштаб по расстоянию от центра в карточках
-  var DIM = [0, 0.34, 0.5, 0.62, 0.7];      // затемнение
+  var DIM = [0, 0.34, 0.5, 0.62, 1.1];      // затемнение: растёт с расстоянием (у самого края почти чёрное)
   var SHD = [1, 0.35, 0.25, 0.2, 0.2];      // сила тени
-  var MAXD = 3.6;                            // дальше — карточка скрыта
+  var MAXD = 3.5;                            // видны 3 карточки с каждой стороны; четвёртая только «выезжает» (до 3.5), дальше visibility:hidden
   var geo = { E: 560, c: 170, unit: 255, Xs: [0, 0, 0, 0, 0] };
 
   /* значение по узлам (узлы — целые t), первый отрезок — со сглаживанием */
@@ -433,13 +434,6 @@
     if (i === 0 && smoothFirst) f = ease(f);
     return arr[i] + (arr[i + 1] - arr[i]) * f;
   }
-  function opacityAt(t) {
-    if (t <= 1) return 1;
-    if (t <= 2) return 1 - 0.08 * (t - 1);
-    if (t <= 3) return 0.92 - 0.3 * (t - 2);
-    return Math.max(0, 0.62 * (1 - (t - 3) / (MAXD - 3)));
-  }
-
   function computeGeo() {
     var vw = stage.clientWidth || window.innerWidth;
     var E, c, overlap;
@@ -453,36 +447,59 @@
     stage.style.setProperty('--c', c + 'px');
   }
 
-  /* ---------- Фото: пробуем другие расширения, потом заглушка с буквой ---------- */
-  function photoCandidates(file) {
-    var base = file.replace(/\.\w+$/, '');
-    return [file, base + '.jpeg', base + '.png', base + '.webp', base + '.JPG', base + '.PNG'];
-  }
+  /* ---------- Фото ----------
+     Файл images/masters/<имя>.<webp|png|jpg> подключается сам, по имени из поля photo
+     (kamshat.jpg → kamshat). Расширения проверяются по очереди; какое подошло у предыдущего
+     мастера, пробуется первым, чтобы не плодить лишние запросы. Нет файла — заглушка с буквой.
+     Ищем только у тех, кто попал в видимую зону ряда. */
+  var PHOTO_EXT = ['webp', 'png', 'jpg'];
+  var rings = [];                                   // у каждого мастера два кольца: свёрнутая и раскрытая карточки
 
-  function ring(m, mini) {
+  function ring(m, mini, i) {
     var r = el('span', 'tm-ring' + (m.shape === 'arch' ? ' tm-ring--arch' : ''));
-    var ph = el('span', 'tm-ph');
+    var ph = el('span', 'tm-ph is-wait');
     var img = document.createElement('img');
     var size = mini ? 96 : 136;
-    var list = photoCandidates(m.photo), n = 0;
     img.alt = mini ? '' : 'Фото: ' + m.name;
     img.width = m.shape === 'arch' ? Math.round(size * 0.82) : size;
     img.height = m.shape === 'arch' ? Math.round(size * 1.09) : size;
+    img.loading = 'lazy';
     img.decoding = 'async';
     img.draggable = false;
-    img.addEventListener('error', function () {
-      n++;
-      if (n < list.length) { img.src = PHOTO_DIR + list[n]; return; }
-      if (img.parentNode) img.parentNode.removeChild(img);
-      ph.classList.add('is-empty');
-      var letter = el('span', 'tm-letter', m.name.charAt(0));
-      letter.setAttribute('aria-hidden', 'true');
-      ph.appendChild(letter);
-    });
-    img.src = PHOTO_DIR + list[0];
+    var letter = el('span', 'tm-letter', m.name.charAt(0));
+    letter.setAttribute('aria-hidden', 'true');
+    ph.appendChild(letter);
     ph.appendChild(img);
     r.appendChild(ph);
+    (rings[i] = rings[i] || []).push({ ph: ph, img: img });
     return r;
+  }
+
+  var photoState = [];                              // 0 — не искали, 1 — ищем, 2 — готово
+  function ensurePhoto(i) {
+    if (photoState[i]) return;
+    photoState[i] = 1;
+    var base = MASTERS[i].photo.replace(/\.\w+$/, '');
+    var exts = PHOTO_EXT.slice();
+    if (ensurePhoto.last) { exts.splice(exts.indexOf(ensurePhoto.last), 1); exts.unshift(ensurePhoto.last); }
+    var k = 0;
+    (function next() {
+      if (k >= exts.length) { done(null); return; }
+      var probe = new Image();
+      probe.onload = function () { ensurePhoto.last = exts[k]; done(PHOTO_DIR + base + '.' + exts[k]); };
+      probe.onerror = function () { k++; next(); };
+      probe.src = PHOTO_DIR + base + '.' + exts[k];
+    })();
+    function done(url) {
+      photoState[i] = 2;
+      (rings[i] || []).forEach(function (x) {
+        x.ph.classList.remove('is-wait');
+        if (!url) { x.ph.classList.add('is-empty'); if (x.img.parentNode) x.img.parentNode.removeChild(x.img); return; }
+        x.img.addEventListener('load', function () { x.ph.classList.add('has-photo'); });
+        x.img.src = url;
+        if (x.img.complete) x.ph.classList.add('has-photo');
+      });
+    }
   }
 
   function roleNode(cls, lines) {
@@ -504,7 +521,7 @@
 
     /* свёрнутый вид */
     var mini = el('div', 'tm-mini');
-    mini.appendChild(ring(m, true));
+    mini.appendChild(ring(m, true, i));
     mini.appendChild(el('h3', 'tm-mini-name', m.name));
     mini.appendChild(roleNode('tm-mini-role', m.role));
 
@@ -515,7 +532,7 @@
     function anim(node) { node.classList.add('tm-a'); anims.push(node); return node; }
 
     var head = anim(el('div', 'tm-head'));
-    head.appendChild(ring(m, false));
+    head.appendChild(ring(m, false, i));
     var title = el('div', 'tm-title');
     title.appendChild(el('h3', 'tm-name', m.name));
     title.appendChild(roleNode('tm-role', m.role));
@@ -559,7 +576,7 @@
     track.appendChild(item);
 
     states.push({ item: item, shadow: shadow, dim: dim, mini: mini, full: full, inner: inner, anims: anims,
-                  hidden: true, miniVis: true, fullVis: true, r: -1 });
+                  hidden: true, miniVis: true, fullVis: true, r: -1, ro: -1 });
   }
 
   MASTERS.forEach(function (m, i) {
@@ -581,7 +598,7 @@
       if (!st.hidden) { it.style.visibility = 'hidden'; st.hidden = true; }
       return;
     }
-    if (st.hidden) { it.style.visibility = 'visible'; st.hidden = false; }
+    if (st.hidden) { it.style.visibility = 'visible'; st.hidden = false; ensurePhoto(i); }
 
     var e0 = ease(Math.min(t, 1));
     var W = geo.E + (geo.c - geo.E) * e0;             // ширина: от раскрытой к свёрнутой
@@ -591,22 +608,22 @@
 
     it.style.width = W.toFixed(1) + 'px';
     it.style.transform = 'translate3d(' + tx.toFixed(1) + 'px,0,0) scale(' + S.toFixed(4) + ')';
-    it.style.opacity = opacityAt(t).toFixed(3);
     it.style.zIndex = String(20000 - Math.round(t * 1000) + (d < 0 ? 1 : 0));   // ближе к центру — выше
-    var blur = t > 2 && !reduced() ? Math.min(1.4, (t - 2)) : 0;                // дальние чуть размыты
-    it.style.filter = blur > 0.05 ? 'blur(' + blur.toFixed(2) + 'px)' : '';
+    /* у карточек дальше второй от центра остаются только фото и имя (должность и нить уходят) */
+    var ro = clamp((2.9 - t) / 0.6, 0, 1);
+    if (ro !== st.ro) { st.ro = ro; st.mini.style.setProperty('--ro', ro.toFixed(3)); }
 
     st.shadow.style.opacity = pts(SHD, t, true).toFixed(3);
     st.dim.style.opacity = pts(DIM, t, true).toFixed(3);
 
     /* свёрнутый и раскрытый вид перетекают друг в друга */
-    var mo = clamp((t - 0.4) / 0.35, 0, 1);
-    var fo = clamp((0.7 - t) / 0.4, 0, 1);
+    var mo = clamp((t - 0.5) / 0.25, 0, 1);            // свёрнутая грань проявляется после того, как погасла раскрытая
+    var fo = clamp((0.55 - t) / 0.25, 0, 1);
     st.mini.style.opacity = mo.toFixed(3);
     st.full.style.opacity = fo.toFixed(3);
     var mv = mo > 0, fv = fo > 0;
-    if (mv !== st.miniVis) { st.mini.style.visibility = mv ? 'visible' : 'hidden'; st.miniVis = mv; }
-    if (fv !== st.fullVis) { st.full.style.visibility = fv ? 'visible' : 'hidden'; st.fullVis = fv; }
+    if (mv !== st.miniVis) { st.mini.style.visibility = mv ? '' : 'hidden'; st.miniVis = mv; }   // '' = наследовать от карточки (явное visible перебивало бы скрытую карточку)
+    if (fv !== st.fullVis) { st.full.style.visibility = fv ? '' : 'hidden'; st.fullVis = fv; }
 
     /* содержимое раскрытой карточки проявляется по очереди по мере приближения к центру */
     var r = clamp((0.75 - t) / 0.65, 0, 1);

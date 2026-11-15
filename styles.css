@@ -1382,7 +1382,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   height: 100%;
   border-radius: 28px;
   transform-origin: 50% 50%;
-  will-change: transform, opacity;
+  will-change: transform;
   outline-offset: 5px;
   cursor: pointer;
   visibility: hidden;               /* пока скрипт не расставил */
@@ -1445,7 +1445,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   width: 1px;
   margin-top: .5rem;
   background: linear-gradient(to bottom, var(--beige-dark), transparent);
-  opacity: .55;
+  opacity: calc(.55 * var(--ro, 1));
 }
 @media (min-width: 640px) { .tm-mini { --ph: 84px; } }
 @media (min-width: 900px) { .tm-mini { --ph: 96px; } }
@@ -1464,11 +1464,15 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   line-height: 1.45;
   text-transform: uppercase;
   overflow-wrap: anywhere;
+  opacity: var(--ro, 1);
 }
 @media (min-width: 640px) { .tm-mini-name { font-size: 1.12rem; } .tm-mini-role { font-size: .68rem; } }
 .tm-rl { display: block; }
 
-/* ---- Фото в золотом кольце (кольцо рисуется стилями, сами фото — круглые без рамки) ---- */
+/* ---- Фото в золотом кольце ----
+   Круг под фото — мягкий бежево-золотистый градиент (как верхний блок раскрытой карточки): он
+   подчёркивает PNG/WebP с прозрачным фоном и делает любое фото одинаково аккуратным.
+   Кольцо тонкое, золотое, с лёгким свечением. Фото кладётся поверх. */
 .tm-ring {
   --ph: 132px;
   position: relative;
@@ -1476,7 +1480,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   flex: none;
   width: var(--ph);
   aspect-ratio: 1;
-  padding: 3px;
+  padding: 2px;
   border-radius: 50%;
   background: conic-gradient(from 200deg, #F4E7C2, #C9AE80, #A98B5C, #E9D9AE, #F4E7C2);
 }
@@ -1486,39 +1490,52 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   border-radius: 999px 999px 22px 22px;
 }
 .tm-ph {
+  position: relative;
   display: block;
   width: 100%;
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  background: #D9C7A6;
+  background:
+    radial-gradient(120% 90% at 30% 15%, rgba(255, 252, 244, .75), rgba(255, 252, 244, 0) 60%),
+    linear-gradient(160deg, #F3EADB 0%, #E5DED6 48%, #D4BD94 100%);
   box-shadow: 0 0 0 2px #F6EEDC;
 }
 .tm-ring--arch .tm-ph { border-radius: 999px 999px 19px 19px; }
-.tm-ph img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; }
-/* Заглушка — только если файла с фото нет */
-.tm-ph.is-empty {
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, var(--tm-gold-1), var(--tm-gold-2));
+.tm-ph img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0;
 }
+.tm-ph.has-photo img { opacity: 1; }
+.team.is-ready .tm-ph img { transition: opacity .4s ease; }
+/* Заглушка — только если файла с фото нет; пока ищем файл, круг просто пустой */
 .tm-letter {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
   color: var(--tm-ink);
   font: 600 calc(var(--ph) * .46)/1 "Cormorant Garamond", Georgia, "Times New Roman", serif;
 }
-/* Мягкое свечение кольца — только opacity */
-.tm-full .tm-ring::before {
+.tm-ph.is-empty .tm-letter { display: grid; }
+/* Лёгкое свечение кольца. Пульсирует только у центральной карточки — только opacity */
+.tm-ring::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: 0 0 22px 5px rgba(214, 178, 106, .65);
-  opacity: .25;
+  box-shadow: 0 0 16px 3px rgba(214, 178, 106, .5);
+  opacity: .5;
   pointer-events: none;
-  animation: tm-glow 3.6s ease-in-out infinite alternate;
 }
-.tm-item:not(.is-center) .tm-ring::before { animation-play-state: paused; }
-@keyframes tm-glow { from { opacity: .18; } to { opacity: .85; } }
+.tm-item.is-center .tm-full .tm-ring::before { animation: tm-glow 3.6s ease-in-out infinite alternate; }
+@keyframes tm-glow { from { opacity: .25; } to { opacity: .95; } }
 
 /* ---- Раскрытая карточка (дизайн без изменений) ---- */
 .tm-full {
