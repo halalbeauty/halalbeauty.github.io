@@ -1337,13 +1337,11 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 /* ---------- Наши мастера ---------- */
 
 .team {
-  --c: 108px;                       /* ширина свёрнутой карточки */
-  --g: 10px;                        /* зазор между карточками */
-  --S: calc(var(--c) + var(--g));   /* шаг ряда: ширина одного «слота» */
-  --E: min(85vw, 420px);            /* ширина раскрытой карточки */
-  --mh: 660px;                      /* высота — подставляет JS по самой длинной карточке */
-  --ease: cubic-bezier(.22, 1, .36, 1);
-  --m-dim: .07;                     /* затемнение свёрнутых карточек */
+  --E: 560px;                       /* ширина раскрытой карточки (JS подставляет по ширине экрана) */
+  --c: 170px;                       /* ширина свёрнутой */
+  --mh: 660px;                      /* высота всех карточек — по самой длинной раскрытой */
+  --dim-a: .75;                     /* сила затемнения боковых карточек */
+  --sh-a: .42;                      /* прозрачность большой тени */
   --tm-ink: #4B3F35;
   --tm-ink-2: #5B4F45;
   --tm-gold-1: #F1E2BC;
@@ -1352,108 +1350,94 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   --tm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72' fill='none' stroke='%23D8C8B4' stroke-opacity='.4' stroke-width='1'%3E%3Cpath d='M66 36L49.9 41.7L57.2 57.2L41.7 49.9L36 66L30.3 49.9L14.8 57.2L22.1 41.7L6 36L22.1 30.3L14.8 14.8L30.3 22.1L36 6L41.7 22.1L57.2 14.8L49.9 30.3Z'/%3E%3Cpath d='M0 36H6M66 36H72M36 0V6M36 66V72'/%3E%3C/svg%3E");
   position: relative;
 }
-
-@media (min-width: 640px) {
-  .team { --c: 132px; --g: 12px; --E: min(480px, 85vw); }
-}
-@media (min-width: 1024px) {
-  .team { --c: 152px; --g: 14px; --E: 540px; }
-}
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .team { --m-dim: .34; }
+  :root:not([data-theme="light"]) .team { --dim-a: 1; --sh-a: .55; }
 }
-:root[data-theme="dark"] .team { --m-dim: .34; }
+:root[data-theme="dark"] .team { --dim-a: 1; --sh-a: .55; }
 
-/* Ряд. Горизонтальную прокрутку и «примагничивание» делает сам браузер (scroll-snap),
-   поэтому вертикальный жест пальцем по ряду по-прежнему листает страницу.
-   touch-action тут намеренно не pan-y: оно бы отключило и нативный горизонтальный свайп. */
+/* ---- Ряд ----
+   Никакого scroll-snap и прокрутки: положение каждой карточки считает script.js
+   каждый кадр от дробной позиции ряда (transform, opacity). Вертикальный жест пальцем
+   по ряду листает страницу (touch-action: pan-y), горизонтальный — ряд. */
 .team-track {
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-block: 1.75rem;
-  margin-block: -1.75rem;
-  cursor: grab;
-}
-.team-track::-webkit-scrollbar { display: none; }
-/* Пустые края, чтобы и первая, и последняя карточка могли встать по центру */
-.team-track::before,
-.team-track::after { content: ""; flex: 0 0 calc(50% - var(--S) / 2); }
-.team-track.is-drag { scroll-snap-type: none; cursor: grabbing; user-select: none; -webkit-user-select: none; }
-
-/* Слот имеет постоянную ширину — раскладка ряда не «прыгает» при раскрытии.
-   Само раскрытие и сдвиг соседей делаются в карточке. */
-.tm-slot {
   position: relative;
-  flex: 0 0 var(--S);
+  isolation: isolate;               /* z-index карточек не выходит за пределы ряда (шапка остаётся выше) */
   height: var(--mh);
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
-  pointer-events: none;   /* сдвинутые карточки соседей перекрываются чужими слотами — клик должен идти в карточку */
+  overflow-x: clip;
+  touch-action: pan-y;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.team-track.is-drag { cursor: grabbing; }
+
+/* Карточка лежит абсолютно; ширину, transform, opacity, z-index ставит скрипт */
+.tm-item {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--c);
+  height: 100%;
+  border-radius: 28px;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+  outline-offset: 5px;
+  cursor: pointer;
+  visibility: hidden;               /* пока скрипт не расставил */
+}
+.tm-item.is-center { cursor: default; }
+
+/* Большая мягкая тень: сама рисуется один раз, а меняется только opacity */
+.tm-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, var(--sh-a)),
+    0 0 60px rgba(201, 174, 128, .28);
 }
 
 .tm-card {
-  --shift: 0px;
-  --sc: .94;
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  border-radius: 28px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+/* Затемнение карточки: чем дальше от центра, тем темнее (opacity ставит скрипт) */
+.tm-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: rgba(0, 0, 0, var(--dim-a));
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- Свёрнутая карточка ---- (внутренняя раскладка не зависит от текущей ширины карточки) */
+.tm-mini {
+  --ph: 64px;
   position: absolute;
   top: 0;
   bottom: 0;
   left: 50%;
   width: var(--c);
-  transform: translateX(-50%) translateX(var(--shift)) scale(var(--sc));
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  cursor: pointer;
-  outline-offset: 4px;
-  pointer-events: auto;
-}
-.tm-card[data-pos="before"] { --shift: calc(-1 * ((var(--E) - var(--S)) / 2 + var(--g) / 2)); }
-.tm-card[data-pos="after"]  { --shift: calc((var(--E) - var(--S)) / 2 + var(--g) / 2); }
-.tm-card[data-pos="active"] { --sc: 1; width: var(--E); cursor: default; box-shadow: 0 28px 70px rgba(126, 106, 82, .28); }
-
-/* Анимации включаются после первого кадра, чтобы при загрузке ряд не «разъезжался» */
-.team.is-ready .tm-card {
-  transition: width .65s var(--ease), transform .65s var(--ease), box-shadow .65s ease;
-}
-
-/* Лёгкое затемнение боковых карточек */
-.tm-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  background: #000;
-  opacity: var(--m-dim);
-  pointer-events: none;
-}
-.team.is-ready .tm-card::after { transition: opacity .65s ease; }
-.tm-card[data-pos="active"]::after { opacity: 0; }
-
-/* ---- Свёрнутая карточка ---- */
-.tm-mini {
-  --ph: 64px;
-  position: absolute;
-  inset: 0;
+  margin-left: calc(var(--c) / -2);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: .55rem;
-  padding: 1.15rem .55rem 1.25rem;
+  padding: 1.25rem .8rem 1.35rem;
   text-align: center;
-  opacity: 1;
-  visibility: visible;
+  opacity: 0;
 }
-.team.is-ready .tm-mini { transition: opacity .4s ease .3s, visibility 0s; }
-.tm-card[data-pos="active"] .tm-mini { opacity: 0; visibility: hidden; }
-.team.is-ready .tm-card[data-pos="active"] .tm-mini { transition: opacity .25s ease, visibility 0s .25s; }
-
 /* тонкая золотая нить вниз — как у вешалки */
 .tm-mini::after {
   content: "";
@@ -1463,28 +1447,28 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   background: linear-gradient(to bottom, var(--beige-dark), transparent);
   opacity: .55;
 }
-@media (min-width: 640px) { .tm-mini { --ph: 80px; padding-inline: .7rem; } }
-@media (min-width: 1024px) { .tm-mini { --ph: 92px; } }
+@media (min-width: 640px) { .tm-mini { --ph: 84px; } }
+@media (min-width: 900px) { .tm-mini { --ph: 96px; } }
 
 .tm-mini-name {
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   line-height: 1.15;
   letter-spacing: -.01em;
   overflow-wrap: anywhere;
 }
 .tm-mini-role {
   color: var(--accent-ink);
-  font-size: .62rem;
+  font-size: .64rem;
   font-weight: 700;
   letter-spacing: .1em;
   line-height: 1.45;
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
-@media (min-width: 640px) { .tm-mini-name { font-size: 1.1rem; } .tm-mini-role { font-size: .66rem; } }
+@media (min-width: 640px) { .tm-mini-name { font-size: 1.12rem; } .tm-mini-role { font-size: .68rem; } }
 .tm-rl { display: block; }
 
-/* ---- Круглое фото в золотом кольце ---- */
+/* ---- Фото в золотом кольце (кольцо рисуется стилями, сами фото — круглые без рамки) ---- */
 .tm-ring {
   --ph: 132px;
   position: relative;
@@ -1511,7 +1495,8 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   box-shadow: 0 0 0 2px #F6EEDC;
 }
 .tm-ring--arch .tm-ph { border-radius: 999px 999px 19px 19px; }
-.tm-ph img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tm-ph img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; }
+/* Заглушка — только если файла с фото нет */
 .tm-ph.is-empty {
   display: grid;
   place-items: center;
@@ -1521,7 +1506,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   color: var(--tm-ink);
   font: 600 calc(var(--ph) * .46)/1 "Cormorant Garamond", Georgia, "Times New Roman", serif;
 }
-/* Мягкое свечение кольца — только opacity, поэтому не нагружает страницу */
+/* Мягкое свечение кольца — только opacity */
 .tm-full .tm-ring::before {
   content: "";
   position: absolute;
@@ -1532,25 +1517,22 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   pointer-events: none;
   animation: tm-glow 3.6s ease-in-out infinite alternate;
 }
+.tm-item:not(.is-center) .tm-ring::before { animation-play-state: paused; }
 @keyframes tm-glow { from { opacity: .18; } to { opacity: .85; } }
 
-/* ---- Раскрытая карточка ---- */
+/* ---- Раскрытая карточка (дизайн без изменений) ---- */
 .tm-full {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 50%;
   width: var(--E);
-  transform: translateX(-50%);
+  margin-left: calc(var(--E) / -2);
   container-type: inline-size;
   background: var(--tm-pattern), linear-gradient(180deg, #FFFFFF 0%, #FBF7F1 100%);
   color: var(--tm-ink);
   opacity: 0;
-  visibility: hidden;
 }
-.team.is-ready .tm-full { transition: opacity .3s ease, visibility 0s .3s; }
-.tm-card[data-pos="active"] .tm-full { opacity: 1; visibility: visible; }
-.team.is-ready .tm-card[data-pos="active"] .tm-full { transition: opacity .5s ease .12s, visibility 0s; }
 
 .tm-inner { padding: 1.1rem 1.1rem 3rem; }
 
@@ -1670,14 +1652,8 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   pointer-events: none;
 }
 
-/* Содержимое раскрытой карточки появляется по очереди */
-.tm-a { opacity: 0; transform: translateY(10px); }
-.team.is-ready .tm-a { transition: opacity .25s ease, transform .25s ease; }
-.tm-card[data-pos="active"] .tm-a { opacity: 1; transform: none; }
-.team.is-ready .tm-card[data-pos="active"] .tm-a {
-  transition: opacity .6s ease calc(.3s + var(--d, 0) * 60ms),
-              transform .6s var(--ease) calc(.3s + var(--d, 0) * 60ms);
-}
+/* Элементы раскрытой карточки проявляются по мере приближения к центру (opacity/transform ставит скрипт) */
+.tm-a { opacity: 0; }
 
 /* ---- Управление ---- */
 .team-controls {
@@ -1685,7 +1661,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   align-items: center;
   justify-content: center;
   gap: 1.25rem;
-  margin-top: 2.25rem;
+  margin-top: 2.5rem;
   padding-inline: var(--pad);
 }
 .team-nav {
@@ -1723,7 +1699,7 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   border-radius: 50%;
   background: var(--line-strong);
   cursor: pointer;
-  transition: transform .3s var(--ease), background-color .3s ease;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1), background-color .3s ease;
 }
 .team-dot::before { content: ""; position: absolute; inset: -8px; }
 .team-dot[aria-current="true"] { background: var(--beige-dark); transform: scale(1.5); }
@@ -1739,7 +1715,6 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 
 @media (prefers-reduced-motion: reduce) {
   .team *, .team *::before, .team *::after { transition: none !important; animation: none !important; }
-  .team-track { scroll-behavior: auto; }
 }
 
 /* ---------- Работы ---------- */

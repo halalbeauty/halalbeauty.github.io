@@ -247,7 +247,10 @@
   }
 })();
 
-/* ---------- Наши мастера: ряд карточек, центральная раскрывается ---------- */
+/* ---------- Наши мастера: ряд «как на вешалке» ----------
+   Одна дробная позиция pos догоняет target каждый кадр (requestAnimationFrame).
+   Положение, ширина, масштаб, прозрачность, тень, затемнение и z-index каждой карточки
+   считаются непрерывно от d = i - pos, а не включаются классом. */
 (function () {
   'use strict';
 
@@ -398,9 +401,10 @@
   var btnNext = stage.querySelector('.team-nav.next');
   var N = MASTERS.length;
 
-  var cards = [], fulls = [], dots = [];
-  var active = -1, step = 1;
-  var locked = false, lockTimer = 0;
+  var states = [], dots = [];
+  var pos = 0, target = 0;          // дробный индекс карточки в центре и цель, к которой он едет
+  var raf = 0, lastTs = 0;
+  var shown = -1;                    // какая карточка сейчас «текущая» (для счётчика, точек, aria)
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -409,8 +413,77 @@
     return n;
   }
   function pad(n) { return n < 10 ? '0' + n : String(n); }
-  function clamp(i) { return Math.max(0, Math.min(N - 1, i)); }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function idxOf(v) { return clamp(Math.round(v), 0, N - 1); }
   function reduced() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  function ease(t) { return t * t * (3 - 2 * t); }   // smoothstep
+
+  /* ---------- Геометрия ряда ---------- */
+  var SC = [1, 0.92, 0.84, 0.78, 0.74];     // масштаб по расстоянию от центра в карточках
+  var DIM = [0, 0.34, 0.5, 0.62, 0.7];      // затемнение
+  var SHD = [1, 0.35, 0.25, 0.2, 0.2];      // сила тени
+  var MAXD = 3.6;                            // дальше — карточка скрыта
+  var geo = { E: 560, c: 170, unit: 255, Xs: [0, 0, 0, 0, 0] };
+
+  /* значение по узлам (узлы — целые t), первый отрезок — со сглаживанием */
+  function pts(arr, t, smoothFirst) {
+    var i = Math.floor(t);
+    if (i >= arr.length - 1) return arr[arr.length - 1];
+    var f = t - i;
+    if (i === 0 && smoothFirst) f = ease(f);
+    return arr[i] + (arr[i + 1] - arr[i]) * f;
+  }
+  function opacityAt(t) {
+    if (t <= 1) return 1;
+    if (t <= 2) return 1 - 0.08 * (t - 1);
+    if (t <= 3) return 0.92 - 0.3 * (t - 2);
+    return Math.max(0, 0.62 * (1 - (t - 3) / (MAXD - 3)));
+  }
+
+  function computeGeo() {
+    var vw = stage.clientWidth || window.innerWidth;
+    var E, c, overlap;
+    if (vw < 640) { E = Math.min(vw * 0.86, 420); c = 140; overlap = 22; }
+    else { E = Math.min(560, vw * 0.9); c = vw < 900 ? 160 : 170; overlap = 26; }
+    var gap = 10, Xs = [0];
+    Xs[1] = E / 2 + (c * SC[1]) / 2 - overlap;          // ближайший сосед чуть заходит под центральную
+    for (var k = 2; k < SC.length; k++) Xs[k] = Xs[k - 1] + (c * SC[k - 1]) / 2 + (c * SC[k]) / 2 + gap;
+    geo = { E: E, c: c, unit: c * 1.5, Xs: Xs };
+    stage.style.setProperty('--E', E.toFixed(1) + 'px');
+    stage.style.setProperty('--c', c + 'px');
+  }
+
+  /* ---------- Фото: пробуем другие расширения, потом заглушка с буквой ---------- */
+  function photoCandidates(file) {
+    var base = file.replace(/\.\w+$/, '');
+    return [file, base + '.jpeg', base + '.png', base + '.webp', base + '.JPG', base + '.PNG'];
+  }
+
+  function ring(m, mini) {
+    var r = el('span', 'tm-ring' + (m.shape === 'arch' ? ' tm-ring--arch' : ''));
+    var ph = el('span', 'tm-ph');
+    var img = document.createElement('img');
+    var size = mini ? 96 : 136;
+    var list = photoCandidates(m.photo), n = 0;
+    img.alt = mini ? '' : 'Фото: ' + m.name;
+    img.width = m.shape === 'arch' ? Math.round(size * 0.82) : size;
+    img.height = m.shape === 'arch' ? Math.round(size * 1.09) : size;
+    img.decoding = 'async';
+    img.draggable = false;
+    img.addEventListener('error', function () {
+      n++;
+      if (n < list.length) { img.src = PHOTO_DIR + list[n]; return; }
+      if (img.parentNode) img.parentNode.removeChild(img);
+      ph.classList.add('is-empty');
+      var letter = el('span', 'tm-letter', m.name.charAt(0));
+      letter.setAttribute('aria-hidden', 'true');
+      ph.appendChild(letter);
+    });
+    img.src = PHOTO_DIR + list[0];
+    ph.appendChild(img);
+    r.appendChild(ph);
+    return r;
+  }
 
   function roleNode(cls, lines) {
     var p = el('p', cls);
@@ -418,57 +491,28 @@
     return p;
   }
 
-  /* Круглое (или аркой) фото в золотом кольце. Нет файла — золотой круг с буквой. */
-  function ring(m, mini) {
-    var r = el('span', 'tm-ring' + (m.shape === 'arch' ? ' tm-ring--arch' : ''));
-    var ph = el('span', 'tm-ph');
-    var img = document.createElement('img');
-    var size = mini ? 92 : 136;
-    img.alt = mini ? '' : 'Фото: ' + m.name;
-    img.width = m.shape === 'arch' ? Math.round(size * 0.82) : size;
-    img.height = m.shape === 'arch' ? Math.round(size * 1.09) : size;
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    img.draggable = false;
-    img.addEventListener('error', function () {
-      if (img.parentNode) img.parentNode.removeChild(img);
-      ph.classList.add('is-empty');
-      var letter = el('span', 'tm-letter', m.name.charAt(0));
-      letter.setAttribute('aria-hidden', 'true');
-      ph.appendChild(letter);
-    });
-    img.src = PHOTO_DIR + m.photo;
-    ph.appendChild(img);
-    r.appendChild(ph);
-    return r;
-  }
+  function buildItem(m, i) {
+    var item = el('article', 'tm-item');
+    item.tabIndex = 0;
+    item.setAttribute('role', 'group');
+    item.setAttribute('aria-roledescription', 'слайд');
+    item.setAttribute('aria-label', m.name + ', ' + (i + 1) + ' из ' + N);
 
-  function buildCard(m, i) {
-    var slot = el('div', 'tm-slot');
-    slot.setAttribute('data-i', i);
-
-    var card = el('article', 'tm-card');
-    card.tabIndex = 0;
-    card.setAttribute('role', 'group');
-    card.setAttribute('aria-roledescription', 'слайд');
-    card.setAttribute('aria-label', m.name + ', ' + (i + 1) + ' из ' + N);
+    var shadow = el('span', 'tm-shadow');
+    shadow.setAttribute('aria-hidden', 'true');
+    var card = el('div', 'tm-card');
 
     /* свёрнутый вид */
     var mini = el('div', 'tm-mini');
     mini.appendChild(ring(m, true));
     mini.appendChild(el('h3', 'tm-mini-name', m.name));
     mini.appendChild(roleNode('tm-mini-role', m.role));
-    card.appendChild(mini);
 
     /* раскрытый вид */
     var full = el('div', 'tm-full');
     var inner = el('div', 'tm-inner');
-    var d = 0;
-    function anim(node) {
-      node.classList.add('tm-a');
-      node.style.setProperty('--d', Math.min(d++, 12));
-      return node;
-    }
+    var anims = [];
+    function anim(node) { node.classList.add('tm-a'); anims.push(node); return node; }
 
     var head = anim(el('div', 'tm-head'));
     head.appendChild(ring(m, false));
@@ -500,178 +544,246 @@
     m.outro.forEach(function (t) { outro.appendChild(anim(el('p', null, t))); });
     body.appendChild(outro);
     inner.appendChild(body);
-
     full.appendChild(inner);
     var mark = el('span', 'tm-mark');
     mark.setAttribute('aria-hidden', 'true');
     full.appendChild(mark);
-    card.appendChild(full);
 
-    slot.appendChild(card);
-    track.appendChild(slot);
-    cards.push(card);
-    fulls.push(inner);
+    var dim = el('span', 'tm-dim');
+    dim.setAttribute('aria-hidden', 'true');
+    card.appendChild(mini);
+    card.appendChild(full);
+    card.appendChild(dim);
+    item.appendChild(shadow);
+    item.appendChild(card);
+    track.appendChild(item);
+
+    states.push({ item: item, shadow: shadow, dim: dim, mini: mini, full: full, inner: inner, anims: anims,
+                  hidden: true, miniVis: true, fullVis: true, r: -1 });
   }
 
   MASTERS.forEach(function (m, i) {
-    buildCard(m, i);
+    buildItem(m, i);
     var dot = el('button', 'team-dot');
     dot.type = 'button';
     dot.setAttribute('aria-label', m.name + ', ' + (i + 1) + ' из ' + N);
-    dot.addEventListener('click', function () { goTo(i); });
+    dot.addEventListener('click', function () { setTarget(i); });
     dotsBox.appendChild(dot);
     dots.push(dot);
   });
 
-  /* ---------- Активная карточка ---------- */
-  function setActive(i) {
-    if (i === active) return;
-    active = i;
-    cards.forEach(function (card, k) {
-      card.setAttribute('data-pos', k < i ? 'before' : (k > i ? 'after' : 'active'));
-      if (k === i) card.setAttribute('aria-current', 'true');
-      else card.removeAttribute('aria-current');
-      if (dots[k]) {
-        if (k === i) dots[k].setAttribute('aria-current', 'true');
-        else dots[k].removeAttribute('aria-current');
-      }
-    });
-    count.textContent = '';
-    count.appendChild(el('b', null, pad(i + 1)));
-    count.appendChild(document.createTextNode(' / ' + pad(N)));
-    live.textContent = 'Мастер ' + (i + 1) + ' из ' + N + ': ' + MASTERS[i].name;
-    btnPrev.disabled = i === 0;
-    btnNext.disabled = i === N - 1;
-  }
+  /* ---------- Отрисовка: всё считается от d = i - pos ---------- */
+  function renderItem(i) {
+    var st = states[i], it = st.item;
+    var d = i - pos, t = Math.abs(d);
 
-  function scrollToIndex(i, smooth) {
-    var left = i * step;
-    if (track.scrollTo) track.scrollTo({ left: left, behavior: smooth ? 'smooth' : 'auto' });
-    else track.scrollLeft = left;
-  }
-
-  function lock() {
-    locked = true;
-    clearTimeout(lockTimer);
-    lockTimer = setTimeout(function () { locked = false; }, reduced() ? 80 : 800);
-  }
-
-  function goTo(i, focus) {
-    i = clamp(i);
-    lock();
-    setActive(i);
-    scrollToIndex(i, !reduced());
-    if (focus) cards[i].focus({ preventScroll: true });
-  }
-
-  /* Какая карточка сейчас по центру — определяем по положению прокрутки */
-  var ticking = false;
-  function syncFromScroll() {
-    if (locked || ticking) return;
-    ticking = true;
-    requestAnimationFrame(function () {
-      ticking = false;
-      if (!locked) setActive(clamp(Math.round(track.scrollLeft / step)));
-    });
-  }
-  track.addEventListener('scroll', syncFromScroll, { passive: true });
-  track.addEventListener('scrollend', function () {
-    locked = false;
-    setActive(clamp(Math.round(track.scrollLeft / step)));
-  });
-  ['wheel', 'touchstart'].forEach(function (t) {
-    track.addEventListener(t, function () { locked = false; }, { passive: true });
-  });
-
-  /* ---------- Мышь: перетаскивание ---------- */
-  var drag = null, suppressClick = false;
-  track.addEventListener('pointerdown', function (e) {
-    if (e.pointerType !== 'mouse' || e.button !== 0) return;
-    locked = false;
-    drag = { x: e.clientX, left: track.scrollLeft, moved: false, lastX: e.clientX, lastT: e.timeStamp, v: 0 };
-  });
-  window.addEventListener('pointermove', function (e) {
-    if (!drag) return;
-    var dx = e.clientX - drag.x;
-    if (!drag.moved) {
-      if (Math.abs(dx) < 5) return;
-      drag.moved = true;
-      track.classList.add('is-drag');
-    }
-    var dt = e.timeStamp - drag.lastT;
-    if (dt > 0) drag.v = (e.clientX - drag.lastX) / dt;
-    drag.lastX = e.clientX;
-    drag.lastT = e.timeStamp;
-    track.scrollLeft = drag.left - dx;
-  });
-  function endDrag() {
-    if (!drag) return;
-    var d = drag;
-    drag = null;
-    if (!d.moved) return;
-    track.classList.remove('is-drag');
-    suppressClick = true;
-    setTimeout(function () { suppressClick = false; }, 0);
-    var start = clamp(Math.round(d.left / step));
-    var target = clamp(Math.round(track.scrollLeft / step));
-    if (target === start && Math.abs(d.v) > 0.4) target = clamp(start + (d.v < 0 ? 1 : -1));  // быстрый «бросок»
-    goTo(target);
-  }
-  window.addEventListener('pointerup', endDrag);
-  window.addEventListener('pointercancel', endDrag);
-
-  /* ---------- Клик, клавиатура, стрелки ---------- */
-  track.addEventListener('click', function (e) {
-    if (suppressClick) { e.stopPropagation(); e.preventDefault(); return; }
-    var card = e.target.closest ? e.target.closest('.tm-card') : null;
-    if (!card) return;
-    var i = cards.indexOf(card);
-    if (i !== -1 && i !== active) goTo(i);
-  }, true);
-
-  track.addEventListener('focusin', function (e) {
-    var card = e.target.closest ? e.target.closest('.tm-card') : null;
-    var i = card ? cards.indexOf(card) : -1;
-    if (i !== -1 && i !== active) goTo(i);
-  });
-
-  stage.addEventListener('keydown', function (e) {
-    var k = e.key, i = null;
-    if (k === 'ArrowLeft') i = active - 1;
-    else if (k === 'ArrowRight') i = active + 1;
-    else if (k === 'Home') i = 0;
-    else if (k === 'End') i = N - 1;
-    else if ((k === 'Enter' || k === ' ') && e.target.classList && e.target.classList.contains('tm-card')) {
-      e.preventDefault();
-      goTo(cards.indexOf(e.target), true);
+    if (t > MAXD) {
+      if (!st.hidden) { it.style.visibility = 'hidden'; st.hidden = true; }
       return;
     }
-    if (i === null) return;
-    e.preventDefault();
-    goTo(i, e.target.classList && e.target.classList.contains('tm-card'));
-  });
+    if (st.hidden) { it.style.visibility = 'visible'; st.hidden = false; }
 
-  btnPrev.addEventListener('click', function () { goTo(active - 1); });
-  btnNext.addEventListener('click', function () { goTo(active + 1); });
+    var e0 = ease(Math.min(t, 1));
+    var W = geo.E + (geo.c - geo.E) * e0;             // ширина: от раскрытой к свёрнутой
+    var S = pts(SC, t, false);                         // масштаб
+    var X = (d < 0 ? -1 : 1) * pts(geo.Xs, t, false);  // смещение центра от центра ряда
+    var tx = X - W / 2;
 
-  /* ---------- Одинаковая высота по самой длинной раскрытой карточке ---------- */
-  function measure() {
-    var h = 0;
-    fulls.forEach(function (n) { h = Math.max(h, n.offsetHeight); });
-    if (h) stage.style.setProperty('--mh', Math.ceil(h) + 'px');
-    var s0 = track.querySelector('.tm-slot:nth-child(1)');
-    var s1 = track.querySelector('.tm-slot:nth-child(2)');
-    var st = (s0 && s1) ? s1.offsetLeft - s0.offsetLeft : 0;
-    if (st > 0) {
-      step = st;
-      if (active >= 0 && Math.abs(track.scrollLeft - active * step) > 1) scrollToIndex(active, false);
+    it.style.width = W.toFixed(1) + 'px';
+    it.style.transform = 'translate3d(' + tx.toFixed(1) + 'px,0,0) scale(' + S.toFixed(4) + ')';
+    it.style.opacity = opacityAt(t).toFixed(3);
+    it.style.zIndex = String(20000 - Math.round(t * 1000) + (d < 0 ? 1 : 0));   // ближе к центру — выше
+    var blur = t > 2 && !reduced() ? Math.min(1.4, (t - 2)) : 0;                // дальние чуть размыты
+    it.style.filter = blur > 0.05 ? 'blur(' + blur.toFixed(2) + 'px)' : '';
+
+    st.shadow.style.opacity = pts(SHD, t, true).toFixed(3);
+    st.dim.style.opacity = pts(DIM, t, true).toFixed(3);
+
+    /* свёрнутый и раскрытый вид перетекают друг в друга */
+    var mo = clamp((t - 0.4) / 0.35, 0, 1);
+    var fo = clamp((0.7 - t) / 0.4, 0, 1);
+    st.mini.style.opacity = mo.toFixed(3);
+    st.full.style.opacity = fo.toFixed(3);
+    var mv = mo > 0, fv = fo > 0;
+    if (mv !== st.miniVis) { st.mini.style.visibility = mv ? 'visible' : 'hidden'; st.miniVis = mv; }
+    if (fv !== st.fullVis) { st.full.style.visibility = fv ? 'visible' : 'hidden'; st.fullVis = fv; }
+
+    /* содержимое раскрытой карточки проявляется по очереди по мере приближения к центру */
+    var r = clamp((0.75 - t) / 0.65, 0, 1);
+    if (r !== st.r) {
+      st.r = r;
+      var K = st.anims.length;
+      for (var k = 0; k < K; k++) {
+        var o = clamp((r - (0.5 * k) / K) / 0.5, 0, 1);
+        var a = st.anims[k];
+        a.style.opacity = o.toFixed(3);
+        a.style.transform = o < 1 ? 'translate3d(0,' + ((1 - o) * 12).toFixed(1) + 'px,0)' : '';
+      }
     }
   }
 
-  var resizeTimer = 0;
+  function render() {
+    for (var i = 0; i < N; i++) renderItem(i);
+  }
+
+  /* ---------- Цикл: pos плавно догоняет target ---------- */
+  var dragging = false;
+  function tick(ts) {
+    raf = 0;
+    var dt = Math.min(50, ts - (lastTs || ts));
+    lastTs = ts;
+    var k = reduced() ? 0.5 : (dragging ? 0.32 : 0.12);
+    k = 1 - Math.pow(1 - k, dt / 16.667);              // одинаково на 60 и 144 Гц
+    pos += (target - pos) * k;
+    if (Math.abs(target - pos) < 0.0006) pos = target;
+    render();
+    if (pos !== target) raf = requestAnimationFrame(tick);
+    else { lastTs = 0; settle(); }
+  }
+  function kick() {
+    if (!raf) { lastTs = 0; raf = requestAnimationFrame(tick); }
+  }
+
+  /* Какая карточка «текущая»: счётчик, точки, aria-current, кнопки */
+  function syncUI() {
+    var idx = idxOf(target);
+    if (idx === shown) return;
+    shown = idx;
+    states.forEach(function (st, k) {
+      st.item.classList.toggle('is-center', k === idx);
+      if (k === idx) st.item.setAttribute('aria-current', 'true');
+      else st.item.removeAttribute('aria-current');
+      if (k === idx) dots[k].setAttribute('aria-current', 'true');
+      else dots[k].removeAttribute('aria-current');
+    });
+    count.textContent = '';
+    count.appendChild(el('b', null, pad(idx + 1)));
+    count.appendChild(document.createTextNode(' / ' + pad(N)));
+    btnPrev.disabled = idx === 0;
+    btnNext.disabled = idx === N - 1;
+  }
+  function settle() {
+    live.textContent = 'Мастер ' + (shown + 1) + ' из ' + N + ': ' + MASTERS[shown].name;
+  }
+
+  function setTarget(v) {
+    target = clamp(Math.round(v), 0, N - 1);
+    syncUI();
+    kick();
+  }
+
+  /* ---------- Мышь, палец: pointer events ---------- */
+  var drag = null;
+  track.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+  track.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    drag = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, on: false, pos0: 0, x0: 0,
+             samples: [{ t: e.timeStamp, x: e.clientX }] };
+  });
+
+  window.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.on) {
+      if (Math.abs(dx) < 6) return;
+      if (Math.abs(dy) > Math.abs(dx)) return;          // вертикальный жест — это прокрутка страницы
+      drag.on = true;
+      dragging = true;
+      drag.pos0 = pos;                                   // подхватываем ряд там, где он сейчас
+      drag.x0 = e.clientX;
+      target = pos;
+      track.classList.add('is-drag');
+      try { track.setPointerCapture(e.pointerId); } catch (err) { /* не критично */ }
+    }
+    var s = drag.samples;
+    s.push({ t: e.timeStamp, x: e.clientX });
+    while (s.length > 2 && e.timeStamp - s[0].t > 110) s.shift();
+    target = clamp(drag.pos0 - (e.clientX - drag.x0) / geo.unit, -0.4, N - 0.6);
+    kick();
+  });
+
+  function endPointer(e, canceled) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var d = drag;
+    drag = null;
+    if (!d.on) {
+      /* обычный клик/тап: боковая карточка встаёт в центр */
+      if (canceled) return;
+      var item = e.target.closest ? e.target.closest('.tm-item') : null;
+      var i = item ? states.map(function (s) { return s.item; }).indexOf(item) : -1;
+      if (i !== -1 && i !== idxOf(target)) setTarget(i);
+      return;
+    }
+    dragging = false;
+    track.classList.remove('is-drag');
+    var s = d.samples, from = s[0], to = s[s.length - 1];
+    var v = 0;                                           // карточек в секунду
+    if (!canceled && to.t - from.t > 8) v = -((to.x - from.x) / (to.t - from.t)) * 1000 / geo.unit;
+    /* «Бросок»: спокойное движение (меньше ~2 карточек/с) — ровно на столько, на сколько довели;
+       быстрое добавляет до 3 карточек. Считаем от цели target, а не от отстающей pos. */
+    var bonus = reduced() ? 0 : Math.min(3, Math.max(0, Math.abs(v) - 2) * 0.15) * (v < 0 ? -1 : 1);
+    var projected = target + bonus;
+    setTarget(projected);
+  }
+  window.addEventListener('pointerup', function (e) { endPointer(e, false); });
+  window.addEventListener('pointercancel', function (e) { endPointer(e, true); });
+
+  /* ---------- Колесо и трекпад ---------- */
+  var wheelTimer = 0, wheelBase = 0, wheelOn = false, wheelNotch = false;
+  track.addEventListener('wheel', function (e) {
+    var dx = e.deltaX, dy = e.deltaY;
+    if (e.shiftKey && Math.abs(dx) < Math.abs(dy)) dx = dy;      // Shift + колесо
+    else if (Math.abs(dx) <= Math.abs(dy)) return;                // вертикальное колесо листает страницу
+    if (e.deltaMode === 1) dx *= 16;
+    e.preventDefault();
+    if (!wheelOn) { wheelOn = true; wheelBase = idxOf(target); wheelNotch = false; }
+    if (Math.abs(dx) >= 50) wheelNotch = true;                    // крупный дискретный щелчок мыши (не трекпад)
+    target = clamp(target + dx / 320, -0.4, N - 0.6);
+    kick();
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(function () {
+      wheelOn = false;
+      var delta = target - wheelBase;
+      var t2 = Math.round(target);
+      if (wheelNotch && Math.abs(delta) > 0.1 && Math.abs(delta) < 0.5) t2 = wheelBase + (delta > 0 ? 1 : -1);  // один щелчок колеса — одна карточка
+      setTarget(t2);
+    }, reduced() ? 80 : 140);
+  }, { passive: false });
+
+  /* ---------- Клавиатура, стрелки ---------- */
+  stage.addEventListener('keydown', function (e) {
+    var k = e.key, base = idxOf(target), i = null;
+    if (k === 'ArrowLeft') i = base - 1;
+    else if (k === 'ArrowRight') i = base + 1;
+    else if (k === 'Home') i = 0;
+    else if (k === 'End') i = N - 1;
+    if (i === null) return;
+    e.preventDefault();
+    i = clamp(i, 0, N - 1);
+    setTarget(i);
+    if (e.target.classList && e.target.classList.contains('tm-item')) states[i].item.focus({ preventScroll: true });
+  });
+  track.addEventListener('focusin', function (e) {
+    var item = e.target.closest ? e.target.closest('.tm-item') : null;
+    var i = item ? states.map(function (s) { return s.item; }).indexOf(item) : -1;
+    if (i !== -1 && i !== idxOf(target)) setTarget(i);
+  });
+  btnPrev.addEventListener('click', function () { setTarget(idxOf(target) - 1); });
+  btnNext.addEventListener('click', function () { setTarget(idxOf(target) + 1); });
+
+  /* ---------- Размеры: одинаковая высота по самой длинной раскрытой карточке ---------- */
+  function measure() {
+    computeGeo();
+    var h = 0;
+    states.forEach(function (st) { h = Math.max(h, st.inner.offsetHeight); });
+    if (h) stage.style.setProperty('--mh', Math.ceil(h) + 'px');
+    render();
+  }
+  var resizeRaf = 0;
   window.addEventListener('resize', function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(measure, 120);
+    if (resizeRaf) return;
+    resizeRaf = requestAnimationFrame(function () { resizeRaf = 0; measure(); });
   });
 
   /* ---------- Шрифты только для этих карточек: грузим, когда ряд близко ---------- */
@@ -702,9 +814,7 @@
   }
 
   /* ---------- Старт ---------- */
-  setActive(0);
   measure();
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () { stage.classList.add('is-ready'); });
-  });
+  syncUI();
+  settle();
 })();
