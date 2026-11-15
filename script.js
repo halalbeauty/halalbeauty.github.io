@@ -225,4 +225,24 @@
       label.textContent = open ? 'Скрыть' : 'Программа обучения';
     });
   });
+
+  /* ---------- Филиалы: золотое свечение следует за курсором ----------
+     Только для мыши; на телефоне и при «уменьшении движения» не подключается.
+     Скрипт лишь передаёт координаты в --mx/--my, двигает свечение CSS (transform). */
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    Array.prototype.forEach.call(document.querySelectorAll('.branch'), function (card) {
+      var raf = 0, px = 0, py = 0;
+      card.addEventListener('pointermove', function (e) {
+        px = e.clientX; py = e.clientY;
+        if (raf) return;
+        raf = requestAnimationFrame(function () {
+          raf = 0;
+          var r = card.getBoundingClientRect();
+          card.style.setProperty('--mx', (px - r.left) + 'px');
+          card.style.setProperty('--my', (py - r.top) + 'px');
+        });
+      });
+    });
+  }
 })();

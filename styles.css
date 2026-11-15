@@ -1095,6 +1095,245 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 }
 .master p { color: var(--ink-2); font-size: .9rem; margin-top: .3rem; }
 
+/* ---------- Филиалы ---------- */
+
+.branches-head { margin-top: clamp(2.5rem, 6vw, 4rem); }
+
+/* Тонкая золотая линия под заголовком: рисуется слева направо */
+.branch-rule {
+  display: block;
+  width: clamp(72px, 14vw, 140px);
+  height: 2px;
+  margin-top: 1.1rem;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--beige-dark), var(--beige) 70%, transparent);
+  transform-origin: left center;
+  transition: transform .9s cubic-bezier(.22, .61, .36, 1) .25s;
+}
+.js .branches-head:not(.in) .branch-rule { transform: scaleX(0); }
+
+.branches {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr; /* телефон: один столбец */
+}
+@media (min-width: 620px)  { .branches { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1240px) { .branches { grid-template-columns: repeat(4, 1fr); } }
+
+.branch {
+  position: relative;
+  isolation: isolate;
+  background: var(--surface);
+  border: 1px solid transparent; /* вместо неё — градиентная рамка ::before */
+  border-radius: calc(var(--radius) + 6px);
+  box-shadow: var(--shadow);
+  padding: 1.6rem 1.25rem 1.35rem;
+  display: grid;
+  gap: .45rem;
+  align-content: start;
+  transition: transform .45s cubic-bezier(.22, .61, .36, 1);
+}
+
+/* Тонкая градиентная рамка в золотом акценте */
+.branch::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: calc(var(--radius) + 6px);
+  background: linear-gradient(135deg, var(--beige-dark) 0%, var(--beige) 38%, color-mix(in srgb, var(--beige) 22%, transparent) 68%, var(--beige-dark) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .55;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity .45s ease;
+}
+
+/* Глубокая тень для hover: заранее нарисована, при наведении проявляется через opacity */
+.branch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 30px 70px rgba(126, 106, 82, .26);
+  opacity: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity .45s ease;
+}
+
+/* Слой декора: свечение. Обрезан по скруглению карточки */
+.branch-fx {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Мягкое золотистое свечение за курсором (двигается только transform) */
+.branch-fx::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 360px;
+  height: 360px;
+  margin: -180px 0 0 -180px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--beige) 55%, transparent) 0%, transparent 65%);
+  opacity: 0;
+  display: none;
+  transform: translate3d(var(--mx, -400px), var(--my, -400px), 0);
+  transition: opacity .45s ease, transform .35s cubic-bezier(.22, .61, .36, 1);
+}
+
+.branch > :not(.branch-fx) { position: relative; z-index: 1; }
+
+.branch h3 { font-size: 1.3rem; }
+.branch .role {
+  color: var(--accent-ink);
+  font-size: .74rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Номер: золотая подсветка проявляется под цифрами и линией */
+.branch-phone {
+  position: relative;
+  justify-self: start;
+  color: var(--ink);
+  font-family: "Onest", "Golos Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-top: .1rem;
+}
+.branch-phone::before {
+  content: "";
+  position: absolute;
+  inset: -.35rem -.9rem;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--beige) 45%, transparent), transparent);
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+.branch-phone::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--beige-dark), var(--beige));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .45s cubic-bezier(.22, .61, .36, 1);
+}
+.branch-phone:hover::after,
+.branch-phone:focus-visible::after { transform: scaleX(1); }
+.branch-phone:hover::before,
+.branch-phone:focus-visible::before { opacity: 1; }
+.branch-phone:hover { text-decoration: none; }
+
+/* Кнопки: WhatsApp — главная, Instagram и 2ГИС — компактные в одну строку */
+.branch-actions {
+  display: grid;
+  gap: .6rem;
+  margin-top: 1rem;
+}
+
+.branch-social {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6rem;
+}
+
+.branch-wa {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  width: 100%;
+  min-height: 52px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--beige) 30%, #fff) 0%, var(--beige) 100%);
+  border-color: color-mix(in srgb, var(--beige-dark) 55%, transparent);
+  color: #1A1409;
+}
+.branch-wa:hover { box-shadow: none; }
+/* Блик, пробегающий по кнопке */
+.branch-wa::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, .75) 50%, transparent 100%);
+  transform: translateX(-130%) skewX(-18deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.branch-chip {
+  min-height: 42px;
+  padding: 0 .4rem;
+  gap: .35rem;
+  font-size: .85rem;
+  white-space: nowrap;
+}
+.branch-chip:hover { box-shadow: none; }
+
+.branch .br-ic { flex: none; width: 18px; height: 18px; }
+.branch-wa .br-ic { width: 20px; height: 20px; }
+
+/* Появление при прокрутке: карточки выезжают снизу с лёгким размытием, по очереди.
+   Анимация (а не transition) — чтобы задержка не влияла на hover-подъём. */
+.js .branches.reveal { opacity: 1; transform: none; transition: none; }
+.js .branches.reveal:not(.in) .branch { opacity: 0; transform: translateY(30px); }
+.js .branches.reveal.in .branch {
+  animation: branch-in .8s cubic-bezier(.22, .61, .36, 1) calc(var(--i, 0) * 120ms) backwards;
+}
+@keyframes branch-in {
+  from { opacity: 0; transform: translateY(30px); filter: blur(8px); }
+  to   { opacity: 1; transform: none;             filter: blur(0); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .branch-fx::before { display: block; }
+  .branch:hover { transform: translateY(-6px); }
+  .branch:hover::before { opacity: 1; }
+  .branch:hover::after { opacity: 1; }
+  .branch:hover .branch-fx::before { opacity: 1; }
+
+  .branch-wa:hover { transform: translateY(-2px); }
+  .branch-wa:hover::after { transform: translateX(300%) skewX(-18deg); transition: transform .8s cubic-bezier(.22, .61, .36, 1); }
+  .branch-chip:hover { transform: translateY(-2px); }
+
+  .branch .br-ic { transition: transform .35s cubic-bezier(.22, .61, .36, 1); }
+  .branch-wa:hover .br-ic { transform: rotate(-10deg) scale(1.15); }
+  .branch-chip:hover .br-ic { transform: translateY(-1px) scale(1.18); }
+}
+
+.branch:focus-within::before { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .branch, .branch::before, .branch::after, .branch-rule,
+  .branch-phone::before, .branch-phone::after, .branch .br-ic { transition: none; }
+  .js .branches.reveal:not(.in) .branch { opacity: 1; transform: none; }
+  .js .branches.reveal.in .branch { animation: none; }
+  .js .branches-head:not(.in) .branch-rule { transform: none; }
+  .branch-fx::before { display: none; }
+  .branch:hover, .branch-wa:hover, .branch-chip:hover,
+  .branch-wa:hover .br-ic, .branch-chip:hover .br-ic { transform: none; }
+  .branch-wa:hover::after { transform: translateX(-130%) skewX(-18deg); transition: none; }
+}
+
 /* ---------- Работы ---------- */
 
 .works {
