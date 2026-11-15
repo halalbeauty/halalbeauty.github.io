@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Onest:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261116a">
+<link rel="stylesheet" href="styles.css?v=20261116c">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -40,6 +40,7 @@
         <li><a href="#top">Главная</a></li>
         <li><a href="#services">Услуги</a></li>
         <li><a href="#trust">О салоне</a></li>
+        <li><a href="#masters">Мастера</a></li>
         <li><a href="#training">Обучение</a></li>
         <li><a href="#works">Работы</a></li>
         <li><a href="#reviews">Отзывы</a></li>
@@ -1245,6 +1246,33 @@
     </div>
   </section>
 
+  <!-- ---------- Наши мастера ---------- -->
+  <section id="masters">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div>
+          <p class="eyebrow">Команда</p>
+          <h2>Наши мастера</h2>
+        </div>
+        <p class="lead">Листайте, чтобы познакомиться с каждым мастером.</p>
+      </div>
+    </div>
+
+    <!-- Карточки собирает script.js из массива MASTERS -->
+    <div class="team reveal" data-masters role="region" aria-roledescription="карусель" aria-label="Наши мастера">
+      <div class="team-track"></div>
+      <div class="team-controls">
+        <button class="team-nav prev" type="button" aria-label="Предыдущий мастер"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="team-meta">
+          <p class="team-count" aria-hidden="true"></p>
+          <div class="team-dots"></div>
+        </div>
+        <button class="team-nav next" type="button" aria-label="Следующий мастер"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <p class="team-sr" aria-live="polite"></p>
+    </div>
+  </section>
+
   <!-- ---------- Работы ---------- -->
   <section id="works">
     <div class="wrap">
@@ -1492,6 +1520,6 @@
   </div>
 </footer>
 <!-- BUILD:END -->
-<script src="script.js?v=20261116a"></script>
+<script src="script.js?v=20261116c"></script>
 </body>
 </html>

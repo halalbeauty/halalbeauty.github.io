@@ -1334,6 +1334,414 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   .branch-wa:hover::after { transform: translateX(-130%) skewX(-18deg); transition: none; }
 }
 
+/* ---------- Наши мастера ---------- */
+
+.team {
+  --c: 108px;                       /* ширина свёрнутой карточки */
+  --g: 10px;                        /* зазор между карточками */
+  --S: calc(var(--c) + var(--g));   /* шаг ряда: ширина одного «слота» */
+  --E: min(85vw, 420px);            /* ширина раскрытой карточки */
+  --mh: 660px;                      /* высота — подставляет JS по самой длинной карточке */
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --m-dim: .07;                     /* затемнение свёрнутых карточек */
+  --tm-ink: #4B3F35;
+  --tm-ink-2: #5B4F45;
+  --tm-gold-1: #F1E2BC;
+  --tm-gold-2: #C9AE80;
+  --tm-gold-3: #B39466;
+  --tm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72' fill='none' stroke='%23D8C8B4' stroke-opacity='.4' stroke-width='1'%3E%3Cpath d='M66 36L49.9 41.7L57.2 57.2L41.7 49.9L36 66L30.3 49.9L14.8 57.2L22.1 41.7L6 36L22.1 30.3L14.8 14.8L30.3 22.1L36 6L41.7 22.1L57.2 14.8L49.9 30.3Z'/%3E%3Cpath d='M0 36H6M66 36H72M36 0V6M36 66V72'/%3E%3C/svg%3E");
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .team { --c: 132px; --g: 12px; --E: min(480px, 85vw); }
+}
+@media (min-width: 1024px) {
+  .team { --c: 152px; --g: 14px; --E: 540px; }
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .team { --m-dim: .34; }
+}
+:root[data-theme="dark"] .team { --m-dim: .34; }
+
+/* Ряд. Горизонтальную прокрутку и «примагничивание» делает сам браузер (scroll-snap),
+   поэтому вертикальный жест пальцем по ряду по-прежнему листает страницу.
+   touch-action тут намеренно не pan-y: оно бы отключило и нативный горизонтальный свайп. */
+.team-track {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-block: 1.75rem;
+  margin-block: -1.75rem;
+  cursor: grab;
+}
+.team-track::-webkit-scrollbar { display: none; }
+/* Пустые края, чтобы и первая, и последняя карточка могли встать по центру */
+.team-track::before,
+.team-track::after { content: ""; flex: 0 0 calc(50% - var(--S) / 2); }
+.team-track.is-drag { scroll-snap-type: none; cursor: grabbing; user-select: none; -webkit-user-select: none; }
+
+/* Слот имеет постоянную ширину — раскладка ряда не «прыгает» при раскрытии.
+   Само раскрытие и сдвиг соседей делаются в карточке. */
+.tm-slot {
+  position: relative;
+  flex: 0 0 var(--S);
+  height: var(--mh);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  pointer-events: none;   /* сдвинутые карточки соседей перекрываются чужими слотами — клик должен идти в карточку */
+}
+
+.tm-card {
+  --shift: 0px;
+  --sc: .94;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--c);
+  transform: translateX(-50%) translateX(var(--shift)) scale(var(--sc));
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  cursor: pointer;
+  outline-offset: 4px;
+  pointer-events: auto;
+}
+.tm-card[data-pos="before"] { --shift: calc(-1 * ((var(--E) - var(--S)) / 2 + var(--g) / 2)); }
+.tm-card[data-pos="after"]  { --shift: calc((var(--E) - var(--S)) / 2 + var(--g) / 2); }
+.tm-card[data-pos="active"] { --sc: 1; width: var(--E); cursor: default; box-shadow: 0 28px 70px rgba(126, 106, 82, .28); }
+
+/* Анимации включаются после первого кадра, чтобы при загрузке ряд не «разъезжался» */
+.team.is-ready .tm-card {
+  transition: width .65s var(--ease), transform .65s var(--ease), box-shadow .65s ease;
+}
+
+/* Лёгкое затемнение боковых карточек */
+.tm-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: #000;
+  opacity: var(--m-dim);
+  pointer-events: none;
+}
+.team.is-ready .tm-card::after { transition: opacity .65s ease; }
+.tm-card[data-pos="active"]::after { opacity: 0; }
+
+/* ---- Свёрнутая карточка ---- */
+.tm-mini {
+  --ph: 64px;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .55rem;
+  padding: 1.15rem .55rem 1.25rem;
+  text-align: center;
+  opacity: 1;
+  visibility: visible;
+}
+.team.is-ready .tm-mini { transition: opacity .4s ease .3s, visibility 0s; }
+.tm-card[data-pos="active"] .tm-mini { opacity: 0; visibility: hidden; }
+.team.is-ready .tm-card[data-pos="active"] .tm-mini { transition: opacity .25s ease, visibility 0s .25s; }
+
+/* тонкая золотая нить вниз — как у вешалки */
+.tm-mini::after {
+  content: "";
+  flex: 1;
+  width: 1px;
+  margin-top: .5rem;
+  background: linear-gradient(to bottom, var(--beige-dark), transparent);
+  opacity: .55;
+}
+@media (min-width: 640px) { .tm-mini { --ph: 80px; padding-inline: .7rem; } }
+@media (min-width: 1024px) { .tm-mini { --ph: 92px; } }
+
+.tm-mini-name {
+  font-size: 1.02rem;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  overflow-wrap: anywhere;
+}
+.tm-mini-role {
+  color: var(--accent-ink);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  line-height: 1.45;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 640px) { .tm-mini-name { font-size: 1.1rem; } .tm-mini-role { font-size: .66rem; } }
+.tm-rl { display: block; }
+
+/* ---- Круглое фото в золотом кольце ---- */
+.tm-ring {
+  --ph: 132px;
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  width: var(--ph);
+  aspect-ratio: 1;
+  padding: 3px;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, #F4E7C2, #C9AE80, #A98B5C, #E9D9AE, #F4E7C2);
+}
+.tm-ring--arch {
+  width: calc(var(--ph) * .82);
+  aspect-ratio: 3 / 4;
+  border-radius: 999px 999px 22px 22px;
+}
+.tm-ph {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #D9C7A6;
+  box-shadow: 0 0 0 2px #F6EEDC;
+}
+.tm-ring--arch .tm-ph { border-radius: 999px 999px 19px 19px; }
+.tm-ph img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tm-ph.is-empty {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--tm-gold-1), var(--tm-gold-2));
+}
+.tm-letter {
+  color: var(--tm-ink);
+  font: 600 calc(var(--ph) * .46)/1 "Cormorant Garamond", Georgia, "Times New Roman", serif;
+}
+/* Мягкое свечение кольца — только opacity, поэтому не нагружает страницу */
+.tm-full .tm-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 22px 5px rgba(214, 178, 106, .65);
+  opacity: .25;
+  pointer-events: none;
+  animation: tm-glow 3.6s ease-in-out infinite alternate;
+}
+@keyframes tm-glow { from { opacity: .18; } to { opacity: .85; } }
+
+/* ---- Раскрытая карточка ---- */
+.tm-full {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--E);
+  transform: translateX(-50%);
+  container-type: inline-size;
+  background: var(--tm-pattern), linear-gradient(180deg, #FFFFFF 0%, #FBF7F1 100%);
+  color: var(--tm-ink);
+  opacity: 0;
+  visibility: hidden;
+}
+.team.is-ready .tm-full { transition: opacity .3s ease, visibility 0s .3s; }
+.tm-card[data-pos="active"] .tm-full { opacity: 1; visibility: visible; }
+.team.is-ready .tm-card[data-pos="active"] .tm-full { transition: opacity .5s ease .12s, visibility 0s; }
+
+.tm-inner { padding: 1.1rem 1.1rem 3rem; }
+
+.tm-head {
+  --ph: clamp(92px, 27cqw, 136px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(.6rem, 3.2cqw, 1.4rem);
+  padding: clamp(.8rem, 3.4cqw, 1.25rem);
+  border-radius: 22px;
+  background: #E5DED6;
+}
+.tm-title {
+  position: relative;
+  min-width: 0;
+  padding: 1rem 0 1rem .5rem;
+}
+/* золотистые уголки со звёздочками */
+.tm-title::before,
+.tm-head::after {
+  content: "";
+  position: absolute;
+  width: 82px;
+  height: 44px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 104 58' fill='none' stroke='%23B39466' stroke-width='.9' stroke-linecap='round'%3E%3Cpath d='M3 46V16Q3 4 15 4H78'/%3E%3Cpath fill='%23B39466' stroke='none' d='M88 -2Q88.8 3.2 94 4Q88.8 4.8 88 10Q87.2 4.8 82 4Q87.2 3.2 88 -2ZM3 41Q3.7 45.3 8 46Q3.7 46.7 3 51Q2.3 46.7 -2 46Q2.3 45.3 3 41Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: .8;
+  pointer-events: none;
+}
+.tm-title::before { top: -.1rem; left: -.2rem; }
+.tm-head::after { right: 1rem; bottom: .8rem; transform: rotate(180deg); }
+
+.tm-name {
+  font: 600 2rem/1.05 "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 8.2cqw, 2.8rem);
+  letter-spacing: -.01em;
+  color: var(--tm-ink);
+  overflow-wrap: anywhere;
+}
+.tm-role {
+  margin-top: .55rem;
+  font: 600 .8rem/1.4 "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: clamp(.78rem, 2.8cqw, .95rem);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--tm-ink-2);
+}
+
+.tm-body {
+  display: grid;
+  gap: 1.15rem;
+  padding: 1.35rem .5rem 0 .6rem;
+}
+.tm-lead {
+  padding-left: .95rem;
+  border-left: 1.5px solid var(--tm-ink);
+}
+.tm-exp {
+  font: 600 1.05rem/1.2 "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: clamp(1rem, 3.7cqw, 1.2rem);
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  color: var(--tm-ink);
+}
+.tm-intro,
+.tm-list li,
+.tm-outro p + p {
+  font-family: "Comfortaa", "Golos Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  color: var(--tm-ink-2);
+}
+.tm-intro { margin-top: .2rem; font-size: clamp(.8rem, 2.9cqw, .92rem); line-height: 1.5; }
+
+.tm-listtitle {
+  display: inline-block;
+  padding: 0 2.5rem .3rem 0;
+  border-bottom: 1px solid rgba(75, 63, 53, .55);
+  font: italic 600 1.15rem/1.2 "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: clamp(1.05rem, 3.9cqw, 1.28rem);
+  text-transform: uppercase;
+  color: var(--tm-ink);
+}
+.tm-list ul { margin-top: .75rem; display: grid; gap: .12rem; }
+.tm-list li {
+  position: relative;
+  padding-left: 1.4rem;
+  font-size: clamp(.8rem, 2.9cqw, .92rem);
+  line-height: 1.5;
+}
+.tm-list li::before {
+  content: "\2713";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--tm-ink);
+  font-family: "Golos Text", "Segoe UI Symbol", Arial, sans-serif;
+}
+
+.tm-outro { display: grid; gap: .6rem; margin-top: .35rem; padding-right: 1.2rem; }
+.tm-outro p {
+  font: 600 1rem/1.4 "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: clamp(.98rem, 3.6cqw, 1.12rem);
+  color: var(--tm-ink);
+}
+.tm-outro p + p { font-size: clamp(.8rem, 2.9cqw, .92rem); line-height: 1.5; }
+/* после всех font-правил: шорткат font сбрасывает variant-numeric. Лицевые цифры, а не «старого стиля» */
+.tm-name, .tm-role, .tm-exp, .tm-listtitle, .tm-outro p { font-variant-numeric: lining-nums; }
+
+/* значок из трёх квадратиков в правом нижнем углу */
+.tm-mark {
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.2rem;
+  width: 38px;
+  height: 22px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 38 22'%3E%3Crect x='0' y='12' width='10' height='10' fill='%23E6DDD2'/%3E%3Crect x='14' y='12' width='10' height='10' fill='%23B9A088'/%3E%3Crect x='28' y='12' width='10' height='10' fill='%23E6DDD2'/%3E%3Crect x='28' y='1' width='10' height='10' fill='%23BCA58C'/%3E%3C/svg%3E") center / contain no-repeat;
+  pointer-events: none;
+}
+
+/* Содержимое раскрытой карточки появляется по очереди */
+.tm-a { opacity: 0; transform: translateY(10px); }
+.team.is-ready .tm-a { transition: opacity .25s ease, transform .25s ease; }
+.tm-card[data-pos="active"] .tm-a { opacity: 1; transform: none; }
+.team.is-ready .tm-card[data-pos="active"] .tm-a {
+  transition: opacity .6s ease calc(.3s + var(--d, 0) * 60ms),
+              transform .6s var(--ease) calc(.3s + var(--d, 0) * 60ms);
+}
+
+/* ---- Управление ---- */
+.team-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 2.25rem;
+  padding-inline: var(--pad);
+}
+.team-nav {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform .22s ease, opacity .22s ease, box-shadow .22s ease;
+}
+.team-nav:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow); }
+.team-nav:disabled { opacity: .35; cursor: default; }
+.team-meta { display: grid; justify-items: center; gap: .8rem; }
+.team-count {
+  font-family: "Onest", "Golos Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: .08em;
+  color: var(--ink-2);
+}
+.team-count b { color: var(--ink); font-weight: 700; }
+.team-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; max-width: 17rem; }
+.team-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--line-strong);
+  cursor: pointer;
+  transition: transform .3s var(--ease), background-color .3s ease;
+}
+.team-dot::before { content: ""; position: absolute; inset: -8px; }
+.team-dot[aria-current="true"] { background: var(--beige-dark); transform: scale(1.5); }
+
+.team-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team *, .team *::before, .team *::after { transition: none !important; animation: none !important; }
+  .team-track { scroll-behavior: auto; }
+}
+
 /* ---------- Работы ---------- */
 
 .works {
