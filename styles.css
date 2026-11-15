@@ -1537,8 +1537,8 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 @keyframes tm-glow { from { opacity: .25; } to { opacity: .95; } }
 
 /* ---- Раскрытая карточка ----
-   Оформление в общем стиле сайта (как карточки «Обучения»): фон и рамка из темы,
-   шрифты сайта, бежевые «таблетки», галочки цвета акцента. Работает и в тёмной теме. */
+   Как карточки «Почему нам доверяют» (.master): круг сверху, имя, строка капсом, абзац.
+   Фон и рамка — из темы сайта. */
 .tm-full {
   position: absolute;
   top: 0;
@@ -1546,119 +1546,41 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   left: 50%;
   width: var(--E);
   margin-left: calc(var(--E) / -2);
-  container-type: inline-size;
   background: var(--surface);
   color: var(--ink);
   opacity: 0;
 }
-
-.tm-inner { padding: clamp(1rem, 4cqw, 1.6rem) clamp(1rem, 4.5cqw, 1.8rem) 1.6rem; }
-
-/* Верх: фото и имя на мягкой бежевой подложке */
-.tm-head {
-  --ph: clamp(88px, 24cqw, 120px);
-  display: flex;
-  align-items: center;
-  gap: clamp(.9rem, 4cqw, 1.4rem);
-  padding: clamp(.9rem, 3.6cqw, 1.2rem);
-  border-radius: 22px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--beige) 30%, var(--surface)) 0%, color-mix(in srgb, var(--beige) 12%, var(--surface)) 100%);
+.tm-inner {
+  --ph: 112px;
+  display: grid;
+  justify-items: start;
+  gap: .45rem;
+  padding: 1.9rem 1.8rem 2rem;
 }
-.tm-title { min-width: 0; }
-
+.tm-inner > .tm-ring { margin-bottom: .9rem; }
 .tm-name {
-  font-family: "Onest", "Golos Text", "Helvetica Neue", Arial, sans-serif;
-  font-weight: 600;
-  font-size: clamp(1.5rem, 6.4cqw, 2.1rem);
-  line-height: 1.05;
+  font-size: clamp(1.45rem, 2.4vw, 1.75rem);
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  color: var(--ink);
   overflow-wrap: anywhere;
 }
-/* Должность — бежевые «таблетки», как бейджи в «Обучении» */
 .tm-role {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .35rem;
-  margin-top: .7rem;
-}
-.tm-role .tm-rl {
-  display: inline-block;
-  padding: .28rem .7rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--beige) 45%, transparent);
   color: var(--accent-ink);
-  font-size: .68rem;
+  font-size: .74rem;
   font-weight: 700;
-  letter-spacing: .08em;
-  line-height: 1.3;
-  text-transform: uppercase;
-}
-
-.tm-body {
-  display: grid;
-  gap: 1.25rem;
-  padding: 1.4rem .2rem 0;
-}
-
-/* Опыт и описание: подпись цвета акцента + текст */
-.tm-lead { padding-left: .95rem; border-left: 2px solid var(--beige); }
-.tm-exp {
-  color: var(--accent-ink);
-  font-size: .76rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-  line-height: 1.35;
-  text-transform: uppercase;
-}
-.tm-intro {
-  margin-top: .35rem;
-  color: var(--ink-2);
-  font-size: clamp(.88rem, 2.9cqw, .97rem);
-  line-height: 1.5;
-}
-
-/* Список: заголовок как .plan-h, пункты с галочкой как .plan-facts */
-.tm-listtitle {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: .76rem;
-  font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.tm-list ul { display: grid; gap: .55rem; margin-top: .75rem; }
-.tm-list li {
-  display: grid;
-  grid-template-columns: 1.25rem minmax(0, 1fr);
-  gap: .6rem;
-  align-items: start;
-  font-size: clamp(.88rem, 2.9cqw, .95rem);
+  letter-spacing: .13em;
   line-height: 1.45;
+  text-transform: uppercase;
 }
-.tm-list li::before {
-  content: "";
-  width: 1.2rem;
-  height: 1.2rem;
-  margin-top: .05rem;
-  background-color: var(--accent-ink);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+.tm-about {
+  margin-top: .45rem;
+  color: var(--ink-2);
+  font-size: .97rem;
+  line-height: 1.6;
 }
-
-/* Финальный текст — отделён тонкой линией, как подвал карточки */
-.tm-outro {
-  display: grid;
-  gap: .55rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--line);
+@media (max-width: 639px) {
+  .tm-inner { --ph: 96px; padding: 1.5rem 1.3rem 1.6rem; }
 }
-.tm-outro p {
-  color: var(--ink);
-  font-size: clamp(.92rem, 3cqw, 1rem);
-  line-height: 1.55;
-}
-.tm-outro p + p { color: var(--ink-2); }
 
 /* Элементы раскрытой карточки проявляются по мере приближения к центру (opacity/transform ставит скрипт) */
 .tm-a { opacity: 0; }
