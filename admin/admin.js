@@ -1,4 +1,4 @@
-/* Админка сайта Halal Beauty: «Важное», прайс и блоки «Наши работы».
+/* Админка сайта Halal Beauty: все разделы сайта.
  *
  * Вход — через GitHub (сервис входа в oauth/worker.js). Данные читаются и
  * записываются прямо в репозиторий (JSON в data/,
@@ -34,6 +34,55 @@
   var news = null;         // { items: [{ id, type, title, text, photo, price, old, from, to, hidden? }] }
   var newsSha = null;
   var savedNewsPhotos = [];
+
+  /* Разделы «форма + список». f: [ключ, подпись, вид, подсказка]; вид: text, area, date, select, url.
+     У обязательных полей подпись со звёздочкой. */
+  var SEC = {
+    masters: {
+      what: 'Мастера', empty: { items: [] }, photoDir: 'photos/masters/',
+      hint: 'Карточки в разделе «Наши мастера». Фото лучше квадратное, лицо по центру: на сайте оно в круге.',
+      add: '+ Добавить мастера', title: ['name', 'Имя'], one: 'мастера',
+      f: [['role', 'Специальности через запятую *', 'text', 'Hair stylist, Lamimaker'], ['exp', 'Опыт', 'text', '5 лет опыта'],
+        ['about', 'О мастере', 'area', 'Два-три коротких предложения']]
+    },
+    training: {
+      what: 'Обучение', empty: { title: '', lead: '', items: [] },
+      hint: 'Раздел «Обучение». Кнопка «Записаться» у курса сама подставит его название в WhatsApp.',
+      top: [['title', 'Заголовок раздела *', 'text'], ['lead', 'Описание раздела', 'area']],
+      add: '+ Добавить курс', title: ['name', 'Название курса'], one: 'курса',
+      f: [['code', 'Короткое имя', 'text', 'Start'], ['badge', 'Метка', 'text', 'Рекомендуем'],
+        ['style', 'Оформление', 'select', [['', 'Обычное'], ['hot', 'Выделенное'], ['max', 'Расширенное']]],
+        ['price', 'Цена', 'text', '49 000 ₸'], ['priceNote', 'Пояснение к цене', 'text', 'мини-группа до 3 учениц'],
+        ['solo', 'Цена индивидуально', 'text', '75 000 ₸'], ['time', 'Длительность', 'text', '1 день, 4 часа'],
+        ['practice', 'Практика', 'text', '2 модели лично каждой ученице'],
+        ['incl', 'Что входит: каждый пункт с новой строки', 'area'],
+        ['program', 'Программа: каждый пункт с новой строки, заголовок начинается с #', 'area'],
+        ['note', 'Примечание', 'area']]
+    },
+    reviews: {
+      what: 'Отзывы', empty: { rating: '', count: '', items: [] }, first: true,
+      hint: 'На сайте видны отзывы с оценкой от 4,5 — девять самых свежих. Копируйте настоящие отзывы из 2ГИС без изменений.',
+      top: [['rating', 'Рейтинг в 2ГИС *', 'text', '4,9'], ['count', 'Всего отзывов в 2ГИС *', 'text', '1716']],
+      add: '+ Добавить отзыв', title: ['name', 'Имя автора'], one: 'отзыва',
+      f: [['text', 'Текст отзыва *', 'area'],
+        ['rating', 'Оценка', 'select', [['5', '5'], ['4.5', '4,5'], ['4', '4'], ['3', '3'], ['2', '2'], ['1', '1']]],
+        ['date', 'Дата отзыва *', 'date'], ['service', 'Услуга', 'text', 'маникюр']]
+    },
+    contacts: {
+      what: 'Контакты', empty: { items: [] },
+      hint: 'Меняются сразу везде: первый экран, контакты, подвал и кнопки записи. Пустые необязательные поля на сайте не видны.',
+      top: [['city', 'Город *', 'text'], ['street', 'Улица и дом, без «ул.» *', 'text'], ['place', 'Здание, этаж', 'text'], ['district', 'Район, индекс', 'text'],
+        ['days', 'Дни работы *', 'text', 'Ежедневно'], ['open', 'Открытие *', 'text', '09:00'], ['close', 'Закрытие *', 'text', '20:00'],
+        ['phone', 'Телефон *', 'text'], ['phone2', 'Второй телефон', 'text'], ['whatsapp', 'Номер WhatsApp *', 'text'],
+        ['booking', 'Ссылка онлайн-записи', 'url'], ['instagram', 'Instagram', 'url'], ['tiktok', 'TikTok', 'url'],
+        ['gis', 'Карточка в 2ГИС', 'url'], ['gisReviews', 'Отзывы в 2ГИС *', 'url']],
+      listTitle: 'Частые вопросы', add: '+ Добавить вопрос', title: ['q', 'Вопрос'], one: 'вопроса',
+      f: [['a', 'Ответ *', 'area']]
+    }
+  };
+  var SECS = Object.keys(SEC);
+  SECS.forEach(function (k) { var s = SEC[k]; s.key = k; s.file = 'data/' + k + '.json'; s.data = null; s.sha = null; s.dirty = false; s.saved = []; });
+
   var view = 'news';
   var priceDirty = false;
   var worksDirty = false;
@@ -94,13 +143,14 @@
   }
 
   function refreshDirty() {
-    dirty = priceDirty || worksDirty || newsDirty;
+    dirty = priceDirty || worksDirty || newsDirty || SECS.some(function (k) { return SEC[k].dirty; });
     var st = $('save-status');
     st.textContent = dirty ? 'Есть несохранённые изменения' : 'Нет изменений';
     st.className = 'adm-save-status' + (dirty ? ' dirty' : '');
     $('save').disabled = !dirty || saving;
     Array.prototype.forEach.call($('views').children, function (b) {
-      b.classList.toggle('dirty', { price: priceDirty, works: worksDirty, news: newsDirty }[b.getAttribute('data-view')]);
+      var v = b.getAttribute('data-view');
+      b.classList.toggle('dirty', SEC[v] ? SEC[v].dirty : { price: priceDirty, works: worksDirty, news: newsDirty }[v]);
     });
   }
 
@@ -119,8 +169,11 @@
     $('view-price').hidden = v !== 'price';
     $('view-works').hidden = v !== 'works';
     $('view-news').hidden = v !== 'news';
+    SECS.forEach(function (k) { $('view-' + k).hidden = v !== k; });
     Array.prototype.forEach.call($('views').children, function (b) {
-      b.setAttribute('aria-selected', String(b.getAttribute('data-view') === v));
+      var on = b.getAttribute('data-view') === v;
+      b.setAttribute('aria-selected', String(on));
+      if (on) b.scrollIntoView({ block: 'nearest', inline: 'center' });
     });
   }
 
@@ -174,6 +227,7 @@
     data = null;
     works = null;
     news = null;
+    SECS.forEach(function (k) { SEC[k].data = null; SEC[k].dirty = false; });
     pending = {};
     store(TOKEN_KEY, null);
     priceDirty = false;
@@ -221,6 +275,7 @@
     savedPhotos = allPhotos(works);
     priceDirty = false;
     savedNewsPhotos = newsPhotos(news);
+    SECS.forEach(function (k) { SEC[k].dirty = false; SEC[k].saved = newsPhotos(SEC[k].data); });
     worksDirty = false;
     newsDirty = false;
     refreshDirty();
@@ -228,6 +283,7 @@
     render();
     renderWorks();
     renderNews();
+    SECS.forEach(function (k) { renderSec(SEC[k]); });
   }
 
   function start() {
@@ -238,10 +294,13 @@
       var json = function (file, fallback) {
         return fetch('../' + file).then(function (r) { return r.json(); }).catch(function () { return fallback; });
       };
-      Promise.all([json(FILE), json(WORKS_FILE, { blocks: [] }), json(NEWS_FILE, { items: [] })]).then(function (r) {
+      Promise.all([json(FILE), json(WORKS_FILE, { blocks: [] }), json(NEWS_FILE, { items: [] })].concat(SECS.map(function (k) {
+        return json(SEC[k].file, SEC[k].empty);
+      }))).then(function (r) {
         data = r[0];
         works = r[1];
         news = r[2];
+        SECS.forEach(function (k, i) { SEC[k].data = r[3 + i]; });
         active = 0;
         afterLoad();
       });
@@ -261,7 +320,9 @@
           throw err;
         });
       };
-      return Promise.all([price, optional(WORKS_FILE), optional(NEWS_FILE)]).then(function (r) {
+      return Promise.all([price, optional(WORKS_FILE), optional(NEWS_FILE)].concat(SECS.map(function (k) {
+        return optional(SEC[k].file);
+      }))).then(function (r) {
         sha = r[0].sha;
         data = JSON.parse(b64ToUtf8(r[0].content));
         worksSha = r[1] ? r[1].sha : null;
@@ -270,6 +331,12 @@
         newsSha = r[2] ? r[2].sha : null;
         news = r[2] ? JSON.parse(b64ToUtf8(r[2].content)) : { items: [] };
         if (!news.items) news.items = [];
+        SECS.forEach(function (k, i) {
+          var f = r[3 + i];
+          SEC[k].sha = f ? f.sha : null;
+          SEC[k].data = f ? JSON.parse(b64ToUtf8(f.content)) : JSON.parse(JSON.stringify(SEC[k].empty));
+          if (!SEC[k].data.items) SEC[k].data.items = [];
+        });
         afterLoad();
       });
     }).catch(function (err) {
@@ -358,6 +425,56 @@
       else if (n.from && n.to && n.to < n.from) problems.push('у записи «' + n.title + '» последняя дата раньше первой');
     });
     return { out: out, problems: problems };
+  }
+
+  function trimmed(o) {
+    var out = {};
+    Object.keys(o).forEach(function (k) {
+      if (k === 'items') return;
+      if (typeof o[k] === 'string') out[k] = o[k].trim();
+      else if (o[k]) out[k] = o[k];
+    });
+    return out;
+  }
+
+  function cleanSec(s) {
+    var problems = [];
+    var check = function (fields, o, where) {
+      fields.forEach(function (f) {
+        var v = o[f[0]] || '';
+        var name = f[1].replace(' *', '').split(':')[0];
+        if (/\*$/.test(f[1]) && !v) problems.push(where + ' не заполнено «' + name + '»');
+        else if (f[2] === 'url' && v && !/^https?:\/\/\S+$/.test(v)) problems.push(where + ' ссылка «' + name + '» должна начинаться с https://');
+        else if (/^(phone2?|whatsapp)$/.test(f[0]) && v && v.replace(/\D/g, '').length !== 11) problems.push(where + ' в «' + name + '» должно быть 11 цифр');
+        else if (/^(open|close)$/.test(f[0]) && v && !/^([01]\d|2[0-3]):[0-5]\d$/.test(v)) problems.push(where + ' «' + name + '» пишется как 09:00');
+      });
+    };
+    var out = trimmed(s.data);
+    if (s.key === 'reviews') {
+      out.rating = (out.rating || '').replace('.', ',');
+      if (out.rating && !/^([1-4](,\d)?|5(,0)?)$/.test(out.rating)) problems.push('рейтинг пишется как 4,9');
+      if (out.count && !/^\d+$/.test(out.count)) problems.push('число отзывов пишется цифрами');
+    }
+    check(s.top || [], out, 'в разделе «' + s.what + '»');
+    out.items = s.data.items.map(trimmed);
+    out.items.forEach(function (i) {
+      var t = i[s.title[0]];
+      if (!t) problems.push('в разделе «' + s.what + '» есть запись, где не заполнено «' + s.title[1] + '»');
+      else check(s.f, i, 'у «' + t + '»');
+    });
+    return { out: out, problems: problems };
+  }
+
+  function saveSec(s, out) {
+    var used = newsPhotos(out);
+    return saveWithPhotos(s.what, s.file, s.sha, out, used, s.saved, function (newSha) {
+      s.sha = newSha;
+      s.data = out;
+      s.saved = used;
+      s.dirty = false;
+      refreshDirty();
+      renderSec(s);
+    });
   }
 
   function newsPhotos(n) {
@@ -492,15 +609,23 @@
     var c = priceDirty ? clean() : null;
     var w = worksDirty ? cleanWorks() : null;
     var n = newsDirty ? cleanNews() : null;
+    var secs = SECS.filter(function (k) { return SEC[k].dirty; }).map(function (k) {
+      var r = cleanSec(SEC[k]);
+      r.sec = SEC[k];
+      return r;
+    });
+    var badSec = secs.filter(function (r) { return r.problems.length; })[0];
     var problems = (n ? n.problems : []).concat(c ? c.problems : [], w ? w.problems : []);
+    secs.forEach(function (r) { problems = problems.concat(r.problems); });
     if (problems.length) {
       toast('Заполните: ' + problems[0] + (problems.length > 1 ? ' (и ещё ' + (problems.length - 1) + ')' : ''), true);
-      setView(n && n.problems.length ? 'news' : c && c.problems.length ? 'price' : 'works');
+      setView(n && n.problems.length ? 'news' : c && c.problems.length ? 'price' : w && w.problems.length ? 'works' : badSec.sec.key);
       markEmpty();
       return;
     }
     if (LOCAL) {
       if (c) window.hbLocalSave = JSON.stringify(c.out, null, 2) + '\n';
+      secs.forEach(function (r) { (window.hbLocalSec = window.hbLocalSec || {})[r.sec.key] = r.out; });
       if (n) window.hbLocalNews = JSON.stringify(n.out, null, 2) + '\n';
       if (w) window.hbLocalWorks = JSON.stringify(w.out, null, 2) + '\n';
       toast('Локальная проверка: ничего не отправлено', false);
@@ -513,6 +638,7 @@
     if (n) chain = chain.then(function () { return saveNews(n.out); });
     if (c) chain = chain.then(function () { return savePrice(c.out); });
     if (w) chain = chain.then(function () { return saveWorks(w.out); });
+    secs.forEach(function (r) { chain = chain.then(function () { return saveSec(r.sec, r.out); }); });
     chain.then(function () {
       saving = false;
       setBusy('Сохранить');
@@ -1019,6 +1145,118 @@
       box.appendChild(h('p', { class: 'adm-muted adm-empty', text: 'Пока нет записей — раздел на сайте скрыт.' }));
     }
     news.items.forEach(function (n, i) { box.appendChild(renderNewsItem(n, i)); });
+  }
+
+  /* ---------- Мастера, обучение, отзывы, контакты ---------- */
+
+  function touchSec(s) { if (!s.dirty) { s.dirty = true; refreshDirty(); } }
+
+  function secField(s, o, f) {
+    var key = f[0], kind = f[2], req = /\*$/.test(f[1]);
+    var el;
+    if (kind === 'select') {
+      el = h('select', { onchange: function () { o[key] = el.value; touchSec(s); renderSec(s); } });
+      f[3].forEach(function (x) { el.appendChild(h('option', { value: x[0] }, x[1])); });
+    } else {
+      el = h(kind === 'area' ? 'textarea' : 'input', {
+        type: kind === 'area' ? null : kind === 'date' ? 'date' : 'text',
+        rows: kind === 'area' ? '4' : null,
+        placeholder: f[3] || (kind === 'url' ? 'https://' : ''),
+        'data-req': req ? '1' : null,
+        oninput: function () {
+          o[key] = el.value;
+          if (req) el.classList.toggle('bad', !el.value.trim());
+          touchSec(s);
+        }
+      });
+    }
+    el.value = o[key] || '';
+    return h('label', { class: kind === 'area' ? 'full' : '' }, f[1], el);
+  }
+
+  function secPhoto(s, o) {
+    var drop = function () {
+      var p = o.photo;
+      o.photo = '';
+      if (p) forget(p);
+    };
+    var changed = function () { touchSec(s); renderSec(s); };
+    var file = h('input', {
+      type: 'file', accept: 'image/*', class: 'adm-file',
+      onchange: function () {
+        var f = file.files[0];
+        if (!f) return;
+        toast('Обрабатываем фото…');
+        prepare(f).then(function (blob) {
+          var path = s.photoDir + newName() + '.jpg';
+          drop();
+          pending[path] = { blob: blob, url: URL.createObjectURL(blob), done: false };
+          o.photo = path;
+          $('toast').hidden = true;
+          changed();
+        }, function () { toast('Не удалось открыть фото. Подойдут JPG, PNG и WebP.', true); });
+      }
+    });
+    return h('div', { class: 'full' }, h('ul', { class: 'adm-photos' },
+      o.photo ? h('li', { class: 'adm-photo' },
+        h('img', { src: previewUrl(o.photo), alt: 'Фото', loading: 'lazy' }),
+        h('div', { class: 'adm-photo-tools' },
+          iconBtn('×', 'Убрать фото', function () { drop(); changed(); }, 'danger'))) : null,
+      h('li', { class: 'adm-photo-add' }, h('label', null, o.photo ? 'Заменить фото' : '+ Фото', file))));
+  }
+
+  function renderSecItem(s, o, i) {
+    var items = s.data.items;
+    var changed = function () { touchSec(s); renderSec(s); };
+    var low = s.key === 'reviews' && Number(o.rating) < 4.5;
+    var form = h('div', { class: 'adm-news-form' });
+    if (s.photoDir) form.appendChild(secPhoto(s, o));
+    s.f.forEach(function (f) { form.appendChild(secField(s, o, f)); });
+    return h('div', { class: 'menu-group' },
+      h('div', { class: 'adm-group-head' },
+        field(o, s.title[0], { class: 'adm-field-title', placeholder: s.title[1], label: s.title[1], required: true, touch: function () { touchSec(s); } }),
+        h('div', { class: 'adm-ico-row' },
+          h('label', { class: 'adm-wide' },
+            h('input', { type: 'checkbox', checked: o.hidden ? null : true, onchange: function (e) { o.hidden = !e.target.checked; changed(); } }),
+            'Показывать'),
+          s.key === 'reviews' ? null : iconBtn('↑', 'Выше', function () { if (move(items, i, -1)) changed(); }),
+          s.key === 'reviews' ? null : iconBtn('↓', 'Ниже', function () { if (move(items, i, 1)) changed(); }),
+          iconBtn('×', 'Удалить', function () {
+            if (!confirm('Удалить «' + ((o[s.title[0]] || '').trim() || 'без названия') + '»?')) return;
+            items.splice(i, 1);
+            if (o.photo) forget(o.photo);
+            changed();
+          }, 'danger'))),
+      o.hidden || low ? h('p', { class: 'adm-state off', text: o.hidden ? 'Скрыто — на сайте не видно' : 'Оценка ниже 4,5 — на сайте не видно' }) : null,
+      form);
+  }
+
+  function renderSec(s) {
+    var box = $('view-' + s.key);
+    box.textContent = '';
+    box.appendChild(h('p', { class: 'adm-hint' }, s.hint + ' Изменения попадут на сайт после кнопки ', h('b', { text: '«Сохранить»' }), '.'));
+    if (s.top) {
+      var form = h('div', { class: 'adm-news-form' });
+      s.top.forEach(function (f) { form.appendChild(secField(s, s.data, f)); });
+      box.appendChild(h('div', { class: 'menu-group' }, form));
+    }
+    if (s.listTitle) box.appendChild(h('h2', { class: 'adm-sec-title', text: s.listTitle }));
+    var add = h('button', {
+      type: 'button', class: 'adm-add adm-add-group adm-sec-add',
+      onclick: function () {
+        var o = { id: s.key.charAt(0) + '-' + newName() };
+        o[s.title[0]] = '';
+        if (s.key === 'reviews') { o.rating = '5'; o.date = almatyDay(); }
+        if (s.first) s.data.items.unshift(o); else s.data.items.push(o);
+        touchSec(s);
+        renderSec(s);
+        var t = box.querySelectorAll('.adm-field-title');
+        t[s.first ? 0 : t.length - 1].focus();
+      }
+    }, s.add);
+    var list = h('div', { class: 'adm-works' });
+    s.data.items.forEach(function (o, i) { list.appendChild(renderSecItem(s, o, i)); });
+    if (s.first) { box.appendChild(add); box.appendChild(list); } else { box.appendChild(list); box.appendChild(add); }
   }
 
   /* ---------- Старт ---------- */

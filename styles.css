@@ -618,6 +618,9 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
   margin-top: .15rem;
 }
 
+/* Поле контактов пустое — элемент скрыт (render.py) */
+[data-c-if][hidden] { display: none !important; }
+
 /* ---------- Важное: акции, поздравления, объявления ---------- */
 
 .news { padding-top: 0; }

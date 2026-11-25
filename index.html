@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Onest:wght@300;400;500;600&family=Forum&family=Quicksand:wght@300&display=swap">
-<link rel="stylesheet" href="styles.css?v=20261125c">
+<link rel="stylesheet" href="styles.css?v=20261125d">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -47,7 +47,7 @@
         <li><a href="#reviews">Отзывы</a></li>
         <li><a href="#contacts">Контакты</a></li>
       </ul>
-      <a class="btn btn-primary" href="https://wa.me/77074040470" target="_blank" rel="noopener">Записаться</a>
+      <a class="btn btn-primary" data-c-href="wa" href="https://wa.me/77074040470" target="_blank" rel="noopener">Записаться</a>
     </nav>
   </div>
 </header>
@@ -66,10 +66,10 @@
           Салон красоты с особым вниманием к женскому комфорту, приватности и гармонии.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="https://wa.me/77074040470" target="_blank" rel="noopener">Записаться</a>
-          <a class="btn btn-primary" href="https://widget.sonline.su/ru/services/?placeid=999961112" target="_blank" rel="noopener">Онлайн-запись</a>
+          <a class="btn btn-primary" data-c-href="wa" href="https://wa.me/77074040470" target="_blank" rel="noopener">Записаться</a>
+          <a class="btn btn-primary" data-c-href="booking" data-c-if="booking" href="https://widget.sonline.su/ru/services/?placeid=999961112" target="_blank" rel="noopener">Онлайн-запись</a>
           <a class="btn btn-ghost" href="#services">Открыть прайс</a>
-          <a class="btn btn-plain" href="https://2gis.kz/almaty/geo/70000001045331437">Посмотреть на 2GIS</a>
+          <a class="btn btn-plain" data-c-href="gis" data-c-if="gis" href="https://2gis.kz/almaty/geo/70000001045331437">Посмотреть на 2GIS</a>
         </div>
       </div>
 
@@ -78,11 +78,11 @@
         <div class="hero-photo"></div>
 
         <aside class="hero-glass">
-          <h2>Работаем ежедневно</h2>
+          <h2 data-c="work_days">Работаем ежедневно</h2>
           <ul class="glass-lines">
-            <li><span>Часы</span><b>09:00 — 20:00</b></li>
-            <li><span>Адрес</span><b>Розыбакиева 289/1</b></li>
-            <li><span>Запись</span><b>+7 707 404 04 70</b></li>
+            <li><span>Часы</span><b data-c="hours">09:00 — 20:00</b></li>
+            <li><span>Адрес</span><b data-c="street">Розыбакиева 289/1</b></li>
+            <li><span>Запись</span><b data-c="phone">+7 707 404 04 70</b></li>
           </ul>
           <small>По предварительной записи.</small>
         </aside>
@@ -91,7 +91,7 @@
       <ul class="hero-facts reveal">
         <li><b>5 лет</b><span>нам доверяют с 2021 года</span></li>
         <li><b>60 000+</b><span>довольных клиенток</span></li>
-        <li><b>4,9</b><span>рейтинг в 2ГИС, 1716 отзывов</span></li>
+        <li><b data-c="rating">4,9</b><span data-c="rating_fact">рейтинг в 2ГИС, 1716 отзывов</span></li>
       </ul>
     </div>
   </section>
@@ -112,8 +112,35 @@
             <p class="news-tag">Акция<span class="news-term"></span></p>
             <h3>Ламинирование комбо+окрашивание бровей хной</h3>
             <p class="news-text">Ламинирование комбо<br>Окрашивание бровей хной</p>
-            <p class="news-price"><b>17500</b> <s aria-label="Старая цена">21900</s></p>
+            <p class="news-price"><b>17 500 ₸</b> <s aria-label="Старая цена">21 900 ₸</s></p>
             <a class="btn btn-primary" href="https://wa.me/77074040470?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BF%D0%BE%20%D0%B0%D0%BA%D1%86%D0%B8%D0%B8%20%C2%AB%D0%9B%D0%B0%D0%BC%D0%B8%D0%BD%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BA%D0%BE%D0%BC%D0%B1%D0%BE%2B%D0%BE%D0%BA%D1%80%D0%B0%D1%88%D0%B8%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%B1%D1%80%D0%BE%D0%B2%D0%B5%D0%B9%20%D1%85%D0%BD%D0%BE%D0%B9%C2%BB" target="_blank" rel="noopener">Записаться</a>
+          </div>
+        </article>
+        <article class="news-card is-promo">
+          <div class="news-body">
+            <p class="news-tag">Акция<span class="news-term"></span></p>
+            <h3>Сет «Забота о себе»</h3>
+            <p class="news-text">Всё, что нужно для красоты, лёгкости и приятного отдыха.<br>— Маникюр<br>— Педикюр<br>— Шейно-воротниковый массаж<br>— Массаж стоп<br>Продолжительность: 2 часа</p>
+            <p class="news-price"><b>27 500 ₸</b> <s aria-label="Старая цена">34 400 ₸</s></p>
+            <a class="btn btn-primary" href="https://wa.me/77074040470?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BF%D0%BE%20%D0%B0%D0%BA%D1%86%D0%B8%D0%B8%20%C2%AB%D0%A1%D0%B5%D1%82%20%C2%AB%D0%97%D0%B0%D0%B1%D0%BE%D1%82%D0%B0%20%D0%BE%20%D1%81%D0%B5%D0%B1%D0%B5%C2%BB%C2%BB" target="_blank" rel="noopener">Записаться</a>
+          </div>
+        </article>
+        <article class="news-card is-promo">
+          <div class="news-body">
+            <p class="news-tag">Акция<span class="news-term"></span></p>
+            <h3>Сет «Гармония»</h3>
+            <p class="news-text">Красота, уход и расслабление в одном сете.<br>— Распаривание в кедровой бочке<br>— Пилинг рукавицей кесе<br>— Массаж тела, 30 минут<br>— Маникюр<br>— Ламинирование ресниц или бровей<br>Продолжительность: 2,5 часа</p>
+            <p class="news-price"><b>34 000 ₸</b></p>
+            <a class="btn btn-primary" href="https://wa.me/77074040470?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BF%D0%BE%20%D0%B0%D0%BA%D1%86%D0%B8%D0%B8%20%C2%AB%D0%A1%D0%B5%D1%82%20%C2%AB%D0%93%D0%B0%D1%80%D0%BC%D0%BE%D0%BD%D0%B8%D1%8F%C2%BB%C2%BB" target="_blank" rel="noopener">Записаться</a>
+          </div>
+        </article>
+        <article class="news-card is-promo">
+          <div class="news-body">
+            <p class="news-tag">Акция<span class="news-term"></span></p>
+            <h3>Сет «Полное обновление»</h3>
+            <p class="news-text">— Японский массаж лица<br>— Пенный массаж головы<br>— Массаж головы<br>— Уходовая процедура для волос<br>— Расслабляющий мыльный массаж шейно-воротниковой зоны<br>— Уходовая процедура для лица<br>— Лечебный пар<br>— Маникюр<br>— Педикюр<br>Продолжительность: 3 часа</p>
+            <p class="news-price"><b>35 000 ₸</b> <s aria-label="Старая цена">43 900 ₸</s></p>
+            <a class="btn btn-primary" href="https://wa.me/77074040470?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BF%D0%BE%20%D0%B0%D0%BA%D1%86%D0%B8%D0%B8%20%C2%AB%D0%A1%D0%B5%D1%82%20%C2%AB%D0%9F%D0%BE%D0%BB%D0%BD%D0%BE%D0%B5%20%D0%BE%D0%B1%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5%C2%BB%C2%BB" target="_blank" rel="noopener">Записаться</a>
           </div>
         </article>
       </div>
@@ -1026,16 +1053,13 @@
   <!-- ---------- Обучение ---------- -->
   <section id="training">
     <div class="wrap">
+      <!-- TRAINING:START — сгенерировано render.py из data/training.json, руками не править -->
       <div class="sec-head reveal">
         <div>
           <p class="eyebrow">Обучение</p>
           <h2>Обучение по ламинированию</h2>
         </div>
-        <p class="lead">
-          Учим в действующем салоне: преподаватель показывает каждый этап, вы отрабатываете
-          технику на моделях и получаете подробный разбор своей работы. Даты ближайшего набора
-          уточняйте в WhatsApp.
-        </p>
+        <p class="lead">Учим в действующем салоне: преподаватель показывает каждый этап, вы отрабатываете технику на моделях и получаете подробный разбор своей работы. Даты ближайшего набора уточняйте в WhatsApp.</p>
       </div>
 
       <div class="plans">
@@ -1166,6 +1190,7 @@
         Не знаете, какая программа подойдёт? Напишите нам «ОБУЧЕНИЕ» —
         <a href="https://wa.me/77074040470?text=%D0%9E%D0%91%D0%A3%D0%A7%D0%95%D0%9D%D0%98%D0%95" target="_blank" rel="noopener">поможем подобрать под ваш опыт и цель</a>.
       </p>
+      <!-- TRAINING:END -->
     </div>
   </section>
 
@@ -1203,9 +1228,9 @@
           <p>Награда за качество услуг и сервис — но главную оценку нам ставят клиентки в отзывах.</p>
         </article>
         <article class="master">
-          <div class="monogram" aria-hidden="true">4.9</div>
-          <h3>4,9 из 5 в 2ГИС</h3>
-          <p class="role">1716 отзывов</p>
+          <div class="monogram" aria-hidden="true" data-c="rating_dot">4.9</div>
+          <h3 data-c="rating_2gis">4,9 из 5 в 2ГИС</h3>
+          <p class="role" data-c="count">1716 отзывов</p>
           <p>Оценка держится годами и на потоке в десятки тысяч визитов — это и есть главный показатель.</p>
         </article>
       </div>
@@ -1287,7 +1312,10 @@
       </div>
     </div>
 
-    <!-- Карточки собирает script.js из массива MASTERS -->
+    <!-- MASTERS:START — сгенерировано render.py из data/masters.json, руками не править -->
+    <script type="application/json" id="masters-data">[{"name": "Камшат", "photo": "images/masters/kamshat.jpg", "role": ["Косметолог"], "exp": "5 лет опыта", "about": "Чистка лица, пилинги, мезотерапия, капилляротерапия, хиджама, отбеливающие и уходовые процедуры. Каждую процедуру подбирает с учётом состояния и потребностей кожи."}, {"name": "Зейнеп", "photo": "images/masters/zeynep.jpg", "role": ["Lamimaker"], "exp": "3 года опыта", "about": "Ламинирование ресниц и бровей, подбор изгиба, укладка и уход. Подбирает форму под индивидуальные особенности, сохраняя естественность и гармонию образа."}, {"name": "Бакнур", "photo": "images/masters/baknur.jpg", "role": ["Lamimaker"], "exp": "3 года опыта", "about": "Ламинирование ресниц и бровей с подбором изгиба под длину и густоту ресниц. В работе ценит естественный результат, аккуратность и выразительный взгляд."}, {"name": "Диля", "photo": "images/masters/dilya.jpg", "role": ["Podolog", "Nail stylist"], "exp": "23 года опыта", "about": "Маникюр, педикюр и подологический уход: работа с проблемными ногтями и стопами, профилактика. Берётся не только за эстетику, но и за сложные случаи."}, {"name": "Карина", "photo": "images/masters/karina.jpg", "role": ["Nail stylist"], "exp": "3 месяца опыта", "about": "Маникюр и педикюр, в том числе гигиенические, холодный парафин для рук и ног, снятие гель-лака. Для неё важны аккуратность, чистота и комфорт клиентки."}, {"name": "Асель", "photo": "images/masters/asel.jpg", "role": ["Hair stylist"], "exp": "9 лет опыта", "about": "Стрижки и окрашивание любой сложности — мелирование, балаяж, AirTouch, а также укладки, уход и биозавивка. Подбирает образ с учётом структуры волос и черт лица."}, {"name": "Салтанат", "photo": "images/masters/saltanat.jpg", "role": ["Lamimaker"], "exp": "2 года опыта", "about": "Ламинирование ресниц и бровей, архитектура, коррекция и окрашивание бровей. Добивается гармоничного, естественного результата и открытого взгляда."}, {"name": "Гульзара", "photo": "images/masters/gulzara.jpg", "role": ["Hair stylist"], "exp": "10 лет опыта", "about": "Стрижки, окрашивание любой сложности, причёски и укладки. Подбирает форму и оттенок, которые действительно подходят, — с учётом структуры волос, стиля и пожеланий."}, {"name": "Айгуль", "photo": "images/masters/aigul.jpg", "role": ["Мастер массажа", "Lamimaker"], "exp": "5 лет опыта", "about": "Массаж тела, ламинирование ресниц и бровей. В ламинировании любит естественный эффект без перегруженности, в массаже — помочь расслабиться и снять напряжение."}, {"name": "Рабия", "photo": "images/masters/rabiya.jpg", "role": ["Массажист"], "exp": "Более 1 года опыта", "about": "Бережно работает с мышечными зажимами, усталостью, напряжением в спине и шее, скованностью после нагрузок. После массажа тело расслабляется, а движения становятся лёгкими."}, {"name": "Балым", "photo": "images/masters/balym.jpg", "role": ["Hair stylist"], "exp": "20 лет опыта", "about": "Женские стрижки, укладки, окрашивание и сложные техники, уход за волосами. Точно подбирает форму, оттенок и образ с учётом особенностей внешности."}, {"name": "Лейла", "photo": "images/masters/leyla.jpg", "role": ["Массажист", "Остеопат"], "exp": "7 лет практики", "about": "Массаж для расслабления, снятия напряжения и восстановления: зажимы, дискомфорт в спине и шее, усталость. Сертифицированный остеопат — дополняет массаж более глубокой работой с телом."}, {"name": "Асем", "photo": "images/masters/asem.jpg", "role": ["Hair stylist"], "exp": "15 лет опыта", "about": "Женские стрижки, окрашивание и сложные техники, укладки и уход. Подбирает стрижку и оттенок с учётом структуры волос, черт лица и желаемого образа."}, {"name": "Сабина", "photo": "images/masters/sabina.jpg", "role": ["Nail stylist", "Лазерная эпиляция"], "exp": "19 лет в beauty-сфере", "about": "Маникюр и педикюр с вниманием к деталям, бережная лазерная эпиляция. Точность на каждом этапе — к Сабине возвращаются и рекомендуют её близким."}]</script>
+    <!-- MASTERS:END -->
+    <!-- Карточки собирает script.js из этих данных -->
     <div class="team reveal" data-masters role="region" aria-roledescription="карусель" aria-label="Наши мастера">
       <div class="team-track"></div>
       <div class="team-controls">
@@ -1399,7 +1427,7 @@
       <!-- WORKS:END -->
 
       <p class="gallery-note">
-        Больше работ — в <a href="https://www.instagram.com/halal_beauty.kz">Instagram</a>
+        Больше работ — в <a data-c-href="instagram" data-c-if="instagram" href="https://www.instagram.com/halal_beauty.kz">Instagram</a>
         и <a href="https://www.tiktok.com/@halal_beauty.kz">TikTok</a>: 33 тысячи подписчиц,
         обновляем каждую неделю.
       </p>
@@ -1415,27 +1443,28 @@
           <h2>Что говорят клиентки</h2>
         </div>
         <p class="lead">
-          Рейтинг <b>4,9 из 5</b> по 1716 отзывам в 2ГИС. Ниже — несколько последних;
-          все отзывы, включая критику, открыты
-          <a href="https://2gis.kz/almaty/firm/70000001045331437/tab/reviews">на странице 2ГИС</a>.
+          Рейтинг <b data-c="rating_of">4,9 из 5</b> <span data-c="count_by">по 1716 отзывам</span> в 2ГИС.
+          Ниже — отзывы с оценкой от 4,5; все отзывы, включая критику, открыты
+          <a data-c-href="gisReviews" href="https://2gis.kz/almaty/firm/70000001045331437/tab/reviews">на странице 2ГИС</a>.
         </p>
       </div>
 
-      <!-- Реальные отзывы из 2ГИС -->
+      <!-- REVIEWS:START — сгенерировано render.py из data/reviews.json, руками не править -->
       <div class="reviews reveal">
         <figure class="review">
-          <blockquote lang="kk">«Халал бьютидің қызметіне риза болып қайттым. Қыздар өте сыпайы, әсіресе маникюр мастері Әселге көп рақмет»</blockquote>
-          <figcaption><span class="stars" aria-label="5 из 5">★★★★★</span><b>Назерке</b>маникюр · 14 июля 2026, 2ГИС</figcaption>
-        </figure>
-        <figure class="review">
           <blockquote>«Мне очень понравилось посещение салона. Здесь приятная, уютная атмосфера, всё чисто и аккуратно»</blockquote>
-          <figcaption><span class="stars" aria-label="5 из 5">★★★★★</span><b>Нигара Супиева</b>11 августа 2026, 2ГИС</figcaption>
+          <figcaption><span class="stars" role="img" aria-label="5 из 5">★★★★★</span><b>Нигара Супиева</b>11 августа 2026, 2ГИС</figcaption>
         </figure>
         <figure class="review">
           <blockquote>«Очень довольна своей новой стрижкой. Асель внимательно выслушала все мои пожелания, работала аккуратно»</blockquote>
-          <figcaption><span class="stars" aria-label="5 из 5">★★★★★</span><b>Erva Saroglu</b>стрижка · 1 августа 2026, 2ГИС</figcaption>
+          <figcaption><span class="stars" role="img" aria-label="5 из 5">★★★★★</span><b>Erva Saroglu</b>стрижка · 1 августа 2026, 2ГИС</figcaption>
+        </figure>
+        <figure class="review">
+          <blockquote lang="kk">«Халал бьютидің қызметіне риза болып қайттым. Қыздар өте сыпайы, әсіресе маникюр мастері Әселге көп рақмет»</blockquote>
+          <figcaption><span class="stars" role="img" aria-label="5 из 5">★★★★★</span><b>Назерке</b>маникюр · 14 июля 2026, 2ГИС</figcaption>
         </figure>
       </div>
+      <!-- REVIEWS:END -->
     </div>
   </section>
 
@@ -1452,36 +1481,36 @@
             <div>
               <dt>Адрес</dt>
               <dd>
-                Алматы, ул. Розыбакиева 289/1
-                <small>ЖК «Айгерим», 1 этаж · Бостандыкский район, 050060</small>
+                <span data-c="address">Алматы, ул. Розыбакиева 289/1</span>
+                <small data-c="address_more" data-c-if="address_more">ЖК «Айгерим», 1 этаж · Бостандыкский район, 050060</small>
               </dd>
             </div>
             <div>
               <dt>Телефон и WhatsApp</dt>
               <dd>
-                <a href="tel:+77074040470">+7 707 404 04 70</a>
-                <small><a href="tel:+77067040536">+7 706 704 05 36</a> — второй номер</small>
+                <a data-c="phone" data-c-href="tel" href="tel:+77074040470">+7 707 404 04 70</a>
+                <small data-c-if="phone2"><a data-c="phone2" data-c-href="tel2" href="tel:+77067040536">+7 706 704 05 36</a> — второй номер</small>
               </dd>
             </div>
             <div>
               <dt>Соцсети</dt>
               <dd>
-                <a href="https://www.instagram.com/halal_beauty.kz">Instagram</a> ·
-                <a href="https://www.tiktok.com/@halal_beauty.kz">TikTok</a>
-                <small>@halal_beauty.kz</small>
+                <a data-c-href="instagram" data-c-if="instagram" href="https://www.instagram.com/halal_beauty.kz">Instagram</a>
+                <span data-c-if="tiktok">· <a data-c-href="tiktok" href="https://www.tiktok.com/@halal_beauty.kz">TikTok</a></span>
+                <small data-c="handle" data-c-if="handle">@halal_beauty.kz</small>
               </dd>
             </div>
             <div>
               <dt>Часы работы</dt>
               <dd>
-                Ежедневно, 09:00 — 20:00
+                <span data-c="days_hours">Ежедневно, 09:00 — 20:00</span>
                 <small>По предварительной записи</small>
               </dd>
             </div>
             <div>
               <dt>Карта</dt>
-              <dd><a href="https://2gis.kz/almaty/geo/70000001045331437">Открыть в 2ГИС</a>
-                <small>Рейтинг 4,9 · 1716 отзывов</small>
+              <dd><a data-c-href="gis" data-c-if="gis" href="https://2gis.kz/almaty/geo/70000001045331437">Открыть в 2ГИС</a>
+                <small data-c="rating_line">Рейтинг 4,9 · 1716 отзывов</small>
               </dd>
             </div>
           </dl>
@@ -1492,6 +1521,7 @@
           <h2 style="margin-bottom: 2rem;">Частые вопросы</h2>
 
           <div class="faq">
+            <!-- FAQ:START — сгенерировано render.py из data/contacts.json, руками не править -->
             <details>
               <summary>Точно ли в салоне не бывает мужчин?</summary>
               <p>Да. Весь персонал салона — женщины, включая администраторов.</p>
@@ -1500,6 +1530,7 @@
               <summary>Можно ли прийти с детьми?</summary>
               <p>Для вашего комфорта и спокойного отдыха мы рекомендуем посещать салон без детей. Так вы сможете полноценно расслабиться, а также не будете отвлекать других гостей от их отдыха.</p>
             </details>
+            <!-- FAQ:END -->
           </div>
         </div>
       </div>
@@ -1516,7 +1547,7 @@
           <span>Halal <em>Beauty</em></span>
         </a>
         <p class="footer-tagline">by Maksutova Aida</p>
-        <p>Пространство красоты только для женщин. Алматы, Розыбакиева 289/1, ЖК «Айгерим», 1 этаж. Ежедневно с 09:00 до 20:00.</p>
+        <p>Пространство красоты только для женщин. <span data-c="footer_line">Алматы, Розыбакиева 289/1, ЖК «Айгерим», 1 этаж. Ежедневно с 09:00 до 20:00.</span></p>
       </div>
 
       <div>
@@ -1533,22 +1564,22 @@
       <div>
         <h4>Связаться</h4>
         <ul>
-          <li><a href="tel:+77074040470">+7 707 404 04 70</a></li>
-          <li><a href="tel:+77067040536">+7 706 704 05 36</a></li>
-          <li><a href="https://wa.me/77074040470">WhatsApp</a></li>
-          <li><a href="https://www.instagram.com/halal_beauty.kz">Instagram</a></li>
-          <li><a href="https://wa.me/77074040470">Записаться в WhatsApp</a></li>
+          <li><a data-c="phone" data-c-href="tel" href="tel:+77074040470">+7 707 404 04 70</a></li>
+          <li data-c-if="phone2"><a data-c="phone2" data-c-href="tel2" href="tel:+77067040536">+7 706 704 05 36</a></li>
+          <li><a data-c-href="wa" href="https://wa.me/77074040470">WhatsApp</a></li>
+          <li><a data-c-href="instagram" data-c-if="instagram" href="https://www.instagram.com/halal_beauty.kz">Instagram</a></li>
+          <li><a data-c-href="wa" href="https://wa.me/77074040470">Записаться в WhatsApp</a></li>
         </ul>
       </div>
     </div>
 
     <div class="copy">
       <span>© 2026 Halal Beauty</span>
-      <span>Работаем по записи · ежедневно 09:00 — 20:00</span>
+      <span data-c="copy_line">Работаем по записи · ежедневно 09:00 — 20:00</span>
     </div>
   </div>
 </footer>
 <!-- BUILD:END -->
-<script src="script.js?v=20261125c"></script>
+<script src="script.js?v=20261125d"></script>
 </body>
 </html>

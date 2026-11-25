@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Подставляет прайс, «Наши работы» и «Важное» из data/*.json в index.html.
+"""Подставляет содержимое разделов из data/*.json в index.html.
 
-Блоки между NEWS, SERVICES и WORKS:START/END в index.html — сгенерированные:
+Блоки между ИМЯ:START/END и тексты с data-c / data-c-href в index.html — сгенерированные:
 править их руками бесполезно, следующий запуск перезапишет. Цены и услуги
 меняются в data/services.json, блоки с фото — в data/works.json,
-акции и объявления — в data/news.json
+акции и объявления — в data/news.json, остальное — masters, training, reviews
+и contacts.json там же
 (или через админку /admin/).
 
     python3 render.py          # перезаписывает блок в index.html
@@ -24,6 +25,12 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data", "services.json")
 WORKS = os.path.join(ROOT, "data", "works.json")
 NEWS = os.path.join(ROOT, "data", "news.json")
+
+
+def data_file(name):
+    return os.path.join(ROOT, "data", name + ".json")
+
+
 PAGE = os.path.join(ROOT, "index.html")
 
 BLOCK = re.compile(
@@ -35,10 +42,12 @@ WORKS_BLOCK = re.compile(
     re.S,
 )
 
-NEWS_BLOCK = re.compile(
-    r"(?P<head>[ \t]*<!-- NEWS:START[^\n]*-->\n)(?P<body>.*?)(?P<tail>[ \t]*<!-- NEWS:END -->)",
-    re.S,
-)
+
+def marker(name):
+    return re.compile(
+        r"(?P<head>[ \t]*<!-- %s:START[^\n]*-->\n)(?P<body>.*?)(?P<tail>[ \t]*<!-- %s:END -->)" % (name, name),
+        re.S,
+    )
 
 
 def esc(text):
@@ -202,10 +211,14 @@ def render_works(data):
 
 
 NEWS_TYPES = {"promo": "Акция", "greet": "Поздравление", "info": "Важно"}
-WHATSAPP = "https://wa.me/77074040470"
 
 
-def news_item(item):
+def money(text):
+    """«17500» → «17 500 ₸»; остальное — как ввели."""
+    return "{:,} ₸".format(int(text)).replace(",", " ") if re.match(r"[0-9]+$", text) else text
+
+
+def news_item(item, wa):
     """Запись со сроком отдаём скрытой (hidden): в нужный день её открывает script.js."""
     title = item["title"].strip()
     kind = item.get("type") if item.get("type") in NEWS_TYPES else "info"
@@ -225,7 +238,7 @@ def news_item(item):
     lines = [l.strip() for l in (item.get("text") or "").split("\n") if l.strip()]
     if lines:
         out.append('    <p class="news-text">%s</p>' % "<br>".join(esc(l) for l in lines))
-    price, old = (item.get("price") or "").strip(), (item.get("old") or "").strip()
+    price, old = money(get(item, "price")), money(get(item, "old"))
     if kind == "promo" and price:
         was = ' <s aria-label="Старая цена">%s</s>' % esc(old) if old else ""
         out.append('    <p class="news-price"><b>%s</b>%s</p>' % (esc(price), was))
@@ -233,14 +246,14 @@ def news_item(item):
         msg = urllib.parse.quote("Здравствуйте! Хочу записаться по акции «%s»" % title)
         out.append(
             '    <a class="btn btn-primary" href="%s?text=%s" target="_blank" rel="noopener">Записаться</a>'
-            % (WHATSAPP, msg)
+            % (attr(wa), msg)
         )
     out.append("  </div>")
     out.append("</article>")
     return out
 
 
-def render_news(data):
+def render_news(data, wa):
     """Секция скрыта, пока script.js не найдёт в ней хотя бы одну действующую запись."""
     shown = [i for i in data.get("items", []) if not i.get("hidden") and i.get("title", "").strip()]
     if not shown:
@@ -257,9 +270,271 @@ def render_news(data):
         '    <div class="news-grid reveal">',
     ]
     for i in shown:
-        out += ["      " + line for line in news_item(i)]
+        out += ["      " + line for line in news_item(i, wa)]
     out += ["    </div>", "  </div>", "</section>"]
     return "\n".join("  " + l for l in out) + "\n"
+
+
+def get(d, key):
+    return (d.get(key) or "").strip()
+
+
+def visible(data):
+    return [i for i in data.get("items", []) if not i.get("hidden")]
+
+
+def text_lines(text):
+    return [l.strip() for l in (text or "").split("\n") if l.strip()]
+
+
+def indent(lines, n):
+    return "".join((" " * n + l if l else "") + "\n" for l in lines)
+
+
+# ---------- Мастера ----------
+
+def render_masters(data):
+    """Данные для карусели: карточки собирает script.js."""
+    items = [
+        {
+            "name": get(m, "name"),
+            "photo": get(m, "photo"),
+            "role": [x.strip() for x in get(m, "role").split(",") if x.strip()],
+            "exp": get(m, "exp"),
+            "about": get(m, "about"),
+        }
+        for m in visible(data) if get(m, "name")
+    ]
+    js = json.dumps(items, ensure_ascii=False).replace("<", "\\u003c")
+    return '    <script type="application/json" id="masters-data">%s</script>\n' % js
+
+
+# ---------- Обучение ----------
+
+def plan(p, wa):
+    style = p.get("style") if p.get("style") in ("hot", "max") else ""
+    pid = "more-" + re.sub(r"[^\w-]", "", p.get("id", ""))
+    code, badge = get(p, "code"), get(p, "badge")
+    msg = urllib.parse.quote("Здравствуйте! Хочу записаться на обучение " + (code or get(p, "name")).upper())
+    out = ['<article class="plan%s reveal">' % (" plan-" + style if style else ""), '  <div class="plan-top">']
+    out.append('    <p class="plan-code">%s</p>' % esc(code))
+    if badge:
+        out.append('    <span class="plan-badge">%s</span>' % esc(badge))
+    out.append("  </div>")
+    out.append('  <h3 class="plan-name">%s</h3>' % esc(get(p, "name")))
+    out.append(
+        '  <a class="btn %s plan-btn" href="%s?text=%s" target="_blank" rel="noopener">Записаться</a>'
+        % ("btn-primary" if style == "hot" else "btn-ghost", attr(wa), msg)
+    )
+    if get(p, "price"):
+        note = "<small>/ %s</small>" % esc(get(p, "priceNote")) if get(p, "priceNote") else ""
+        out.append('  <p class="plan-price"><b>%s</b>%s</p>' % (esc(get(p, "price")), note))
+    if get(p, "solo"):
+        out.append('  <p class="plan-solo">Индивидуально — <b>%s</b></p>' % esc(get(p, "solo")))
+    facts = [("time", get(p, "time")), ("practice", get(p, "practice"))]
+    facts += [("check", l) for l in text_lines(p.get("incl"))]
+    facts = [f for f in facts if f[1]]
+    if facts:
+        out.append('  <ul class="plan-facts">')
+        out += ['    <li class="ic-%s"><i aria-hidden="true"></i><span>%s</span></li>' % (k, esc(t)) for k, t in facts]
+        out.append("  </ul>")
+    program, note = text_lines(p.get("program")), get(p, "note")
+    if program or note:
+        out += [
+            '  <div class="plan-more">',
+            '    <div class="plan-more-wrap" id="%s">' % attr(pid),
+            '      <div class="plan-more-inner">',
+        ]
+        opened = False
+        for l in program:
+            if l.startswith("#"):
+                if opened:
+                    out.append("        </ul>")
+                    opened = False
+                out.append('        <p class="plan-h">%s</p>' % esc(l.lstrip("# ")))
+            else:
+                if not opened:
+                    out.append('        <ul class="plan-list">')
+                    opened = True
+                out.append("          <li>%s</li>" % esc(l))
+        if opened:
+            out.append("        </ul>")
+        if note:
+            out.append('        <p class="plan-note">%s</p>' % esc(note))
+        out += [
+            "      </div>",
+            "    </div>",
+            '    <button class="plan-toggle" type="button" aria-expanded="false" aria-controls="%s">' % attr(pid),
+            '      <i aria-hidden="true"></i><span>Программа обучения</span>',
+            "    </button>",
+            "  </div>",
+        ]
+    out.append("</article>")
+    return out
+
+
+def render_training(data, wa):
+    out = [
+        '<div class="sec-head reveal">',
+        "  <div>",
+        '    <p class="eyebrow">Обучение</p>',
+        "    <h2>%s</h2>" % esc(get(data, "title")),
+        "  </div>",
+        '  <p class="lead">%s</p>' % esc(get(data, "lead")),
+        "</div>",
+        "",
+        '<div class="plans">',
+    ]
+    for p in visible(data):
+        if get(p, "name"):
+            out += ["  " + l for l in plan(p, wa)]
+    out += [
+        "</div>",
+        "",
+        '<p class="plans-foot reveal">',
+        "  Не знаете, какая программа подойдёт? Напишите нам «ОБУЧЕНИЕ» —",
+        '  <a href="%s?text=%s" target="_blank" rel="noopener">поможем подобрать под ваш опыт и цель</a>.'
+        % (attr(wa), urllib.parse.quote("ОБУЧЕНИЕ")),
+        "</p>",
+    ]
+    return indent(out, 6)
+
+
+# ---------- Отзывы ----------
+
+MIN_RATING = 4.5
+MAX_REVIEWS = 9
+MONTHS = "января февраля марта апреля мая июня июля августа сентября октября ноября декабря".split()
+
+
+def number(text):
+    try:
+        return float(str(text).replace(",", "."))
+    except ValueError:
+        return 0.0
+
+
+def ru_date(iso):
+    m = re.match(r"(\d{4})-(\d\d)-(\d\d)$", iso)
+    if not m or not 1 <= int(m.group(2)) <= 12:
+        return ""
+    return "%d %s %s" % (int(m.group(3)), MONTHS[int(m.group(2)) - 1], m.group(1))
+
+
+def render_reviews(data):
+    """Только оценки от 4,5, свежие первыми."""
+    shown = [
+        r for r in visible(data)
+        if get(r, "name") and get(r, "text") and number(r.get("rating", "")) >= MIN_RATING
+    ]
+    shown.sort(key=lambda r: get(r, "date"), reverse=True)
+    if not shown:
+        return ""
+    out = ['<div class="reviews reveal">']
+    for r in shown[:MAX_REVIEWS]:
+        text = get(r, "text").strip("«»\"")
+        kk = ' lang="kk"' if re.search("[әғқңөұүһі]", text.lower()) else ""
+        rate = number(r["rating"])
+        stars = "★★★★★" if rate >= 5 else "★★★★½"
+        tail = ", ".join(x for x in (ru_date(get(r, "date")), "2ГИС") if x)
+        if get(r, "service"):
+            tail = get(r, "service") + " · " + tail
+        out += [
+            '  <figure class="review">',
+            "    <blockquote%s>«%s»</blockquote>" % (kk, "<br>".join(esc(l) for l in text_lines(text))),
+            '    <figcaption><span class="stars" role="img" aria-label="%s из 5">%s</span><b>%s</b>%s</figcaption>'
+            % (("%g" % rate).replace(".", ","), stars, esc(get(r, "name")), esc(tail)),
+            "  </figure>",
+        ]
+    out.append("</div>")
+    return indent(out, 6)
+
+
+# ---------- Контакты ----------
+
+def render_faq(data):
+    out = []
+    for f in visible(data):
+        if get(f, "q") and get(f, "a"):
+            out += ["<details>", "  <summary>%s</summary>" % esc(get(f, "q")),
+                    "  <p>%s</p>" % "<br>".join(esc(l) for l in text_lines(f["a"])), "</details>"]
+    return indent(out, 12)
+
+
+def digits(phone):
+    d = re.sub(r"\D", "", phone)
+    return "7" + d[1:] if len(d) == 11 and d[0] == "8" else d
+
+
+def https(url):
+    return url if re.match(r"https?://", url) else ""
+
+
+def plural(n, one, few, many):
+    if n % 10 == 1 and n % 100 != 11:
+        return one
+    return few if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14) else many
+
+
+def contact_values(c, reviews):
+    """Все подстановки data-c / data-c-href. Контакты и рейтинг вводятся в админке один раз."""
+    days, opens, close = get(c, "days"), get(c, "open"), get(c, "close")
+    hours = "%s — %s" % (opens, close)
+    city, street, place = get(c, "city"), get(c, "street"), get(c, "place")
+    rating = get(reviews, "rating")
+    n = int(re.sub(r"\D", "", str(reviews.get("count", ""))) or 0)
+    count = "%d %s" % (n, plural(n, "отзыв", "отзыва", "отзывов"))
+    low = days[:1].lower() + days[1:]
+    handle = re.search(r"instagram\.com/([\w.]+)", get(c, "instagram"))
+    v = {
+        "wa": "https://wa.me/" + digits(get(c, "whatsapp")),
+        "tel": "tel:+" + digits(get(c, "phone")),
+        "tel2": "tel:+" + digits(get(c, "phone2")),
+        "phone": get(c, "phone"),
+        "phone2": get(c, "phone2"),
+        "street": street,
+        "hours": hours,
+        "work_days": "Работаем " + low,
+        "address": "%s, ул. %s" % (city, street),
+        "address_more": " · ".join(x for x in (place, get(c, "district")) if x),
+        "days_hours": "%s, %s" % (days, hours),
+        "footer_line": "%s. %s с %s до %s." % (", ".join(x for x in (city, street, place) if x), days, opens, close),
+        "copy_line": "Работаем по записи · %s %s" % (low, hours),
+        "handle": "@" + handle.group(1) if handle else "",
+        "rating": rating,
+        "rating_dot": rating.replace(",", "."),
+        "rating_of": rating + " из 5",
+        "rating_2gis": rating + " из 5 в 2ГИС",
+        "rating_fact": "рейтинг в 2ГИС, " + count,
+        "rating_line": "Рейтинг %s · %s" % (rating, count),
+        "count": count,
+        "count_by": "по %d %s" % (n, plural(n, "отзыву", "отзывам", "отзывам")),
+    }
+    for k in ("instagram", "tiktok", "gis", "gisReviews", "booking"):
+        v[k] = https(get(c, k))
+    return v
+
+
+def fill_contacts(page, v):
+    def tag(m):
+        t = m.group(0)
+        href = re.search(r'\sdata-c-href="(\w+)"', t)
+        if href:
+            t = re.sub(r'\shref="[^"]*"', lambda _: ' href="%s"' % attr(v[href.group(1)]), t)
+        cond = re.search(r'\sdata-c-if="(\w+)"', t)
+        if cond:
+            t = re.sub(r"\shidden(?=[\s>])", "", t)
+            if not v[cond.group(1)]:
+                t = t[:-1] + " hidden>"
+        return t
+
+    page = re.sub(r'<\w+[^<>]*\sdata-c-(?:href|if)="[^<>]*>', tag, page)
+    return re.sub(
+        r'(<(\w+)[^<>]*\sdata-c="(\w+)"[^<>]*>)(.*?)(</\2>)',
+        lambda m: m.group(1) + esc(v[m.group(3)]) + m.group(5),
+        page,
+        flags=re.S,
+    )
 
 
 def read_json(path, default=None):
@@ -273,18 +548,27 @@ def main():
     services = read_json(DATA)
     works = read_json(WORKS, {"blocks": []})
     news = read_json(NEWS, {"items": []})
+    masters, training = read_json(data_file("masters")), read_json(data_file("training"))
+    reviews, contacts = read_json(data_file("reviews")), read_json(data_file("contacts"))
+    values = contact_values(contacts, reviews)
+    wa = values["wa"]
     with io.open(PAGE, encoding="utf-8") as f:
         page = f.read()
     new = page
     for pattern, body, name in (
         (BLOCK, render(services), "SERVICES"),
         (WORKS_BLOCK, render_works(works), "WORKS"),
-        (NEWS_BLOCK, render_news(news), "NEWS"),
+        (marker("NEWS"), render_news(news, wa), "NEWS"),
+        (marker("TRAINING"), render_training(training, wa), "TRAINING"),
+        (marker("MASTERS"), render_masters(masters), "MASTERS"),
+        (marker("REVIEWS"), render_reviews(reviews), "REVIEWS"),
+        (marker("FAQ"), render_faq(contacts), "FAQ"),
     ):
         m = pattern.search(new)
         if not m:
             sys.exit("render.py: в index.html нет блока %s:START … %s:END" % (name, name))
         new = new[: m.start("body")] + body + new[m.start("tail"):]
+    new = fill_contacts(new, values)
     if "--check" in sys.argv:
         sys.exit(0 if new == page else 1)
     if new != page:

@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Onest:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="../styles.css?v=20261125c">
-<link rel="stylesheet" href="admin.css?v=20261125c">
+<link rel="stylesheet" href="../styles.css?v=20261125d">
+<link rel="stylesheet" href="admin.css?v=20261125d">
 </head>
 <body class="adm">
 
@@ -59,8 +59,12 @@
   <section class="adm-screen" id="screen-editor" hidden>
     <div class="adm-switch" id="views" role="tablist" aria-label="Раздел сайта">
       <button type="button" role="tab" data-view="news" aria-selected="true">Важное</button>
-      <button type="button" role="tab" data-view="price" aria-selected="false">Прайс</button>
-      <button type="button" role="tab" data-view="works" aria-selected="false">Наши работы</button>
+      <button type="button" role="tab" data-view="price" aria-selected="false">Услуги</button>
+      <button type="button" role="tab" data-view="masters" aria-selected="false">Мастера</button>
+      <button type="button" role="tab" data-view="training" aria-selected="false">Обучение</button>
+      <button type="button" role="tab" data-view="works" aria-selected="false">Работы</button>
+      <button type="button" role="tab" data-view="reviews" aria-selected="false">Отзывы</button>
+      <button type="button" role="tab" data-view="contacts" aria-selected="false">Контакты</button>
     </div>
 
     <!-- Важное -->
@@ -73,6 +77,12 @@
       <button type="button" class="adm-add adm-add-group adm-news-add" id="add-news">+ Новая запись</button>
       <div class="adm-works" id="news-list"></div>
     </div>
+
+    <!-- Мастера, обучение, отзывы, контакты: содержимое собирает admin.js -->
+    <div id="view-masters" hidden></div>
+    <div id="view-training" hidden></div>
+    <div id="view-reviews" hidden></div>
+    <div id="view-contacts" hidden></div>
 
     <!-- Прайс -->
     <div id="view-price" hidden>
@@ -110,6 +120,6 @@
 
 <div class="adm-toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="admin.js?v=20261125c"></script>
+<script src="admin.js?v=20261125d"></script>
 </body>
 </html>
