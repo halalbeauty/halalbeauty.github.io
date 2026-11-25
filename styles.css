@@ -495,11 +495,17 @@ body.nav-open .burger i:nth-child(3) { transform: translateY(-7px) rotate(-45deg
 @media (min-width: 620px) {
   .hero-lead { max-width: 46ch; }
   .hero-actions {
-    grid-auto-flow: column;
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: .75rem;
   }
   .hero-actions .btn { width: auto; padding-inline: 2rem; }
+}
+
+/* Четыре кнопки в один ряд — шире текстовой колонки */
+@media (min-width: 960px) {
+  .hero-actions { margin-inline: -60px; }
 }
 
 /* Кадр с фото и стеклянная карточка поверх */
