@@ -12,9 +12,9 @@
 
 ## Структура
 - index.html, styles.css, script.js — сайт (без сборщика, чистый HTML/CSS/JS)
-- data/services.json — прайс и услуги; data/works.json — блок «Наши работы»
+- data/services.json — прайс и услуги; data/works.json — блок «Наши работы»; data/news.json — раздел «Важное» (акции, поздравления, объявления; показ по датам делает script.js, время Алматы)
 - photos/ — фото работ
-- render.py — подставляет data/*.json в index.html между маркерами SERVICES:START/END и WORKS:START/END
+- render.py — подставляет data/*.json в index.html между маркерами NEWS, SERVICES и WORKS:START/END
 - build.py — собирает один файл dist/halal-beauty.html (dist/ в .gitignore)
 - admin/ — админка (/admin/), правит data/*.json через GitHub API
 - oauth/worker.js — Cloudflare Worker для GitHub OAuth админки (https://halalbeauty-auth.kazakhbaimeyrzhan.workers.dev)
@@ -29,7 +29,7 @@ python build.py           # собрать dist/halal-beauty.html
 ```
 
 ## Правила
-- Блоки между SERVICES:START/END и WORKS:START/END в index.html генерируются — руками не править; менять data/*.json и запускать render.py.
+- Блоки между NEWS, SERVICES и WORKS:START/END в index.html генерируются — руками не править; менять data/*.json и запускать render.py.
 - После git pull учитывай, что бот GitHub Actions коммитит index.html в main.
 - Не делай git push без явной просьбы пользователя.
 - Перед большими изменениями (3+ файла) сначала покажи план.

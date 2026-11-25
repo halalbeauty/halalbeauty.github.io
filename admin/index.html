@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Onest:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="../styles.css">
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="../styles.css?v=20261125c">
+<link rel="stylesheet" href="admin.css?v=20261125c">
 </head>
 <body class="adm">
 
@@ -58,12 +58,24 @@
   <!-- Редактор -->
   <section class="adm-screen" id="screen-editor" hidden>
     <div class="adm-switch" id="views" role="tablist" aria-label="Раздел сайта">
-      <button type="button" role="tab" data-view="price" aria-selected="true">Прайс</button>
+      <button type="button" role="tab" data-view="news" aria-selected="true">Важное</button>
+      <button type="button" role="tab" data-view="price" aria-selected="false">Прайс</button>
       <button type="button" role="tab" data-view="works" aria-selected="false">Наши работы</button>
     </div>
 
+    <!-- Важное -->
+    <div id="view-news">
+      <p class="adm-hint">
+        Акции, поздравления и объявления. Запись видна на сайте с первой по последнюю дату
+        включительно (время Алматы), потом пропадает сама; без дат — висит постоянно.
+        Верхняя запись в списке — первая на сайте. Не забудьте нажать <b>«Сохранить»</b> внизу.
+      </p>
+      <button type="button" class="adm-add adm-add-group adm-news-add" id="add-news">+ Новая запись</button>
+      <div class="adm-works" id="news-list"></div>
+    </div>
+
     <!-- Прайс -->
-    <div id="view-price">
+    <div id="view-price" hidden>
       <p class="adm-hint">
         Нажмите на название или цену и поправьте. Изменения попадут на сайт только после кнопки
         <b>«Сохранить»</b> внизу; на сайте они появятся через 1–2 минуты.
@@ -98,6 +110,6 @@
 
 <div class="adm-toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="admin.js"></script>
+<script src="admin.js?v=20261125c"></script>
 </body>
 </html>

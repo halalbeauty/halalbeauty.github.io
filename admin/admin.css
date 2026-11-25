@@ -84,6 +84,8 @@
 
 /* Поля ввода выглядят как текст, пока на них не нажали */
 .adm input[type="text"],
+.adm input[type="date"],
+.adm select,
 .adm textarea {
   width: 100%;
   min-width: 0;
@@ -277,6 +279,27 @@
   border-radius: 50%;
   background: #E0A23A;
 }
+
+@media (max-width: 560px) {
+  .adm-switch { display: flex; }
+  .adm-switch button { flex: 1 1 auto; padding: 0 .6rem; font-size: .85rem; }
+}
+
+/* Важное */
+.adm .adm-news-add { margin-bottom: 1rem; }
+.adm-news-form { display: grid; gap: .8rem; margin-top: .9rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.adm-news-form > .full { grid-column: 1 / -1; }
+.adm-news-form > label { display: grid; gap: .25rem; font-size: .78rem; font-weight: 600; color: var(--ink-2); }
+.adm .adm-news-form input[type="text"],
+.adm .adm-news-form input[type="date"],
+.adm .adm-news-form select,
+.adm .adm-news-form textarea { min-height: 42px; border-color: var(--line-strong); background: var(--surface); font-size: 1rem; font-weight: 400; }
+.adm .adm-news-form textarea { min-height: 6rem; resize: vertical; }
+.adm-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.adm-chips .adm-add { margin: 0; }
+.adm-state { margin: .7rem 0 0; font-size: .85rem; font-weight: 600; color: var(--accent-ink); }
+.adm-state.off { color: var(--ink-2); }
+.adm-news-form .adm-photos { margin: 0; }
 
 /* Наши работы */
 .adm-works { display: grid; gap: 1rem; margin-bottom: 1rem; }

@@ -51,6 +51,36 @@
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  /* ---------- Важное: показываем записи по датам (время Алматы, UTC+5) ---------- */
+  var news = document.getElementById('news');
+  var MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+  function syncNews() {
+    if (!news) return;
+    var today = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+    var any = false;
+    Array.prototype.forEach.call(news.querySelectorAll('.news-card'), function (card) {
+      var from = card.getAttribute('data-from');
+      var to = card.getAttribute('data-to');
+      var on = (!from || from <= today) && (!to || to >= today);
+      card.hidden = !on;
+      if (on) any = true;
+      var term = '';
+      if (to) {
+        var d = to.split('-');
+        term = to === today
+          ? (from === to ? 'только сегодня' : 'последний день')
+          : 'до ' + Number(d[2]) + ' ' + MONTHS[Number(d[1]) - 1];
+      }
+      card.querySelector('.news-term').textContent = card.classList.contains('is-promo') ? term : '';
+    });
+    news.hidden = !any;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-news-link]'), function (li) { li.hidden = !any; });
+  }
+  syncNews();
+  // Вкладку могли оставить открытой до следующего дня
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) syncNews(); });
+
   /* ---------- Появление секций ---------- */
   var reveals = document.querySelectorAll('.reveal');
 

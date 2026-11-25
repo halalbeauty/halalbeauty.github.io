@@ -1,8 +1,8 @@
-/* Админка сайта Halal Beauty: прайс и блоки «Наши работы».
+/* Админка сайта Halal Beauty: «Важное», прайс и блоки «Наши работы».
  *
  * Вход — через GitHub (сервис входа в oauth/worker.js). Данные читаются и
- * записываются прямо в репозиторий (data/services.json, data/works.json и
- * фото в photos/works/) через GitHub API от имени вошедшего человека, поэтому
+ * записываются прямо в репозиторий (JSON в data/,
+ * фото в photos/works/ и photos/news/) через GitHub API от имени вошедшего человека, поэтому
  * сохранить может только тот, у кого есть доступ на запись. После сохранения
  * workflow пересобирает index.html (render.py).
  *
@@ -15,7 +15,9 @@
   var BRANCH = 'main';
   var FILE = 'data/services.json';
   var WORKS_FILE = 'data/works.json';
+  var NEWS_FILE = 'data/news.json';
   var PHOTO_DIR = 'photos/works/';
+  var NEWS_DIR = 'photos/news/';
   var MAX_SIDE = 1600;     // длинная сторона фото после сжатия, px
   var JPEG_QUALITY = 0.82;
   var AUTH = 'https://halalbeauty-auth.kazakhbaimeyrzhan.workers.dev';
@@ -29,9 +31,13 @@
   var worksSha = null;     // null — файла в репозитории ещё нет
   var savedPhotos = [];    // фото, которые сейчас лежат в репозитории и привязаны к блокам
   var pending = {};        // путь → { blob, url, done }: загруженные в админке, но ещё не отправленные фото
-  var view = 'price';
+  var news = null;         // { items: [{ id, type, title, text, photo, price, old, from, to, hidden? }] }
+  var newsSha = null;
+  var savedNewsPhotos = [];
+  var view = 'news';
   var priceDirty = false;
   var worksDirty = false;
+  var newsDirty = false;
   var dirty = false;       // есть что сохранять хотя бы в одном разделе
   var saving = false;
   var active = 0;
@@ -88,26 +94,31 @@
   }
 
   function refreshDirty() {
-    dirty = priceDirty || worksDirty;
+    dirty = priceDirty || worksDirty || newsDirty;
     var st = $('save-status');
     st.textContent = dirty ? 'Есть несохранённые изменения' : 'Нет изменений';
     st.className = 'adm-save-status' + (dirty ? ' dirty' : '');
     $('save').disabled = !dirty || saving;
     Array.prototype.forEach.call($('views').children, function (b) {
-      b.classList.toggle('dirty', b.getAttribute('data-view') === 'price' ? priceDirty : worksDirty);
+      b.classList.toggle('dirty', { price: priceDirty, works: worksDirty, news: newsDirty }[b.getAttribute('data-view')]);
     });
   }
 
   function setDirty(v) { priceDirty = v; refreshDirty(); }
   function setWorksDirty(v) { worksDirty = v; refreshDirty(); }
 
+  function setNewsDirty(v) { newsDirty = v; refreshDirty(); }
+
   function touch() { if (!priceDirty) setDirty(true); }
   function touchWorks() { if (!worksDirty) setWorksDirty(true); }
+
+  function touchNews() { if (!newsDirty) setNewsDirty(true); }
 
   function setView(v) {
     view = v;
     $('view-price').hidden = v !== 'price';
     $('view-works').hidden = v !== 'works';
+    $('view-news').hidden = v !== 'news';
     Array.prototype.forEach.call($('views').children, function (b) {
       b.setAttribute('aria-selected', String(b.getAttribute('data-view') === v));
     });
@@ -162,10 +173,12 @@
     token = null;
     data = null;
     works = null;
+    news = null;
     pending = {};
     store(TOKEN_KEY, null);
     priceDirty = false;
     worksDirty = false;
+    newsDirty = false;
     refreshDirty();
     show('login');
   }
@@ -207,11 +220,14 @@
     active = Math.min(active, data.tabs.length - 1);
     savedPhotos = allPhotos(works);
     priceDirty = false;
+    savedNewsPhotos = newsPhotos(news);
     worksDirty = false;
+    newsDirty = false;
     refreshDirty();
     show('editor');
     render();
     renderWorks();
+    renderNews();
   }
 
   function start() {
@@ -222,9 +238,10 @@
       var json = function (file, fallback) {
         return fetch('../' + file).then(function (r) { return r.json(); }).catch(function () { return fallback; });
       };
-      Promise.all([json(FILE), json(WORKS_FILE, { blocks: [] })]).then(function (r) {
+      Promise.all([json(FILE), json(WORKS_FILE, { blocks: [] }), json(NEWS_FILE, { items: [] })]).then(function (r) {
         data = r[0];
         works = r[1];
+        news = r[2];
         active = 0;
         afterLoad();
       });
@@ -237,17 +254,22 @@
         return null;
       }
       var price = gh('/repos/' + REPO + '/contents/' + FILE + '?ref=' + BRANCH);
-      // works.json может ещё не существовать — тогда начинаем с пустого списка
-      var wk = gh('/repos/' + REPO + '/contents/' + WORKS_FILE + '?ref=' + BRANCH).catch(function (err) {
-        if (err.status === 404) return null;
-        throw err;
-      });
-      return Promise.all([price, wk]).then(function (r) {
+      // works.json и news.json могут ещё не существовать — тогда начинаем с пустого списка
+      var optional = function (file) {
+        return gh('/repos/' + REPO + '/contents/' + file + '?ref=' + BRANCH).catch(function (err) {
+          if (err.status === 404) return null;
+          throw err;
+        });
+      };
+      return Promise.all([price, optional(WORKS_FILE), optional(NEWS_FILE)]).then(function (r) {
         sha = r[0].sha;
         data = JSON.parse(b64ToUtf8(r[0].content));
         worksSha = r[1] ? r[1].sha : null;
         works = r[1] ? JSON.parse(b64ToUtf8(r[1].content)) : { blocks: [] };
         if (!works.blocks) works.blocks = [];
+        newsSha = r[2] ? r[2].sha : null;
+        news = r[2] ? JSON.parse(b64ToUtf8(r[2].content)) : { items: [] };
+        if (!news.items) news.items = [];
         afterLoad();
       });
     }).catch(function (err) {
@@ -320,6 +342,30 @@
     return { out: out, problems: problems };
   }
 
+  function cleanNews() {
+    var problems = [];
+    var out = { items: news.items.map(function (n) {
+      var item = { id: n.id, type: n.type, title: (n.title || '').trim() };
+      ['text', 'price', 'old', 'photo', 'from', 'to'].forEach(function (k) {
+        var v = (n[k] || '').trim();
+        if (v && !((k === 'price' || k === 'old') && n.type !== 'promo')) item[k] = v;
+      });
+      if (n.hidden) item.hidden = true;
+      return item;
+    }) };
+    out.items.forEach(function (n) {
+      if (!n.title) problems.push('у записи в «Важном» нет заголовка');
+      else if (n.from && n.to && n.to < n.from) problems.push('у записи «' + n.title + '» последняя дата раньше первой');
+    });
+    return { out: out, problems: problems };
+  }
+
+  function newsPhotos(n) {
+    return n.items.map(function (i) { return i.photo; }).filter(function (p, i, all) {
+      return p && all.indexOf(p) === i;
+    });
+  }
+
   function allPhotos(w) {
     return w.blocks.reduce(function (all, b) { return all.concat(b.photos); }, []);
   }
@@ -362,18 +408,18 @@
     });
   }
 
-  function deleteFile(path) {
+  function deleteFile(path, what) {
     // Лишний файл в репозитории — не беда, поэтому ошибки здесь не показываем
     return gh('/repos/' + REPO + '/contents/' + path + '?ref=' + BRANCH).then(function (f) {
       return gh('/repos/' + REPO + '/contents/' + path, {
         method: 'DELETE',
-        body: JSON.stringify({ message: 'Работы: удалено фото', sha: f.sha, branch: BRANCH })
+        body: JSON.stringify({ message: what + ': удалено фото', sha: f.sha, branch: BRANCH })
       });
     }).catch(function () { /* пусто */ });
   }
 
-  function saveWorks(out) {
-    var used = allPhotos(out);
+  // Общее для разделов с фото: what — «Работы»/«Важное», onSaved(sha) вызывается после записи JSON
+  function saveWithPhotos(what, file, fileSha, out, used, before, onSaved) {
     var todo = used.filter(function (p) { return pending[p] && !pending[p].done; });
     var n = 0;
     var chain = Promise.resolve();
@@ -386,56 +432,76 @@
           return retry409(function () {
             return gh('/repos/' + REPO + '/contents/' + path, {
               method: 'PUT',
-              body: JSON.stringify({ message: 'Работы: новое фото', content: b64, branch: BRANCH })
+              body: JSON.stringify({ message: what + ': новое фото', content: b64, branch: BRANCH })
             });
           });
         }).then(function () { pending[path].done = true; });
       });
     });
 
-    // 2. works.json — после него сайт пересоберётся
+    // 2. JSON — после него сайт пересоберётся
     chain = chain.then(function () {
       setBusy('Сохраняем…');
       var body = {
-        message: 'Работы: правки через админку',
+        message: what + ': правки через админку',
         content: utf8ToB64(JSON.stringify(out, null, 2) + '\n'),
         branch: BRANCH
       };
-      if (worksSha) body.sha = worksSha;
+      if (fileSha) body.sha = fileSha;
       return retry409(function () {
-        return gh('/repos/' + REPO + '/contents/' + WORKS_FILE, { method: 'PUT', body: JSON.stringify(body) });
+        return gh('/repos/' + REPO + '/contents/' + file, { method: 'PUT', body: JSON.stringify(body) });
       });
     }).then(function (res) {
-      worksSha = res.content.sha;
-      works = out;
-      var gone = savedPhotos.filter(function (p) { return used.indexOf(p) < 0; });
-      savedPhotos = used;
-      setWorksDirty(false);
-      renderWorks();
+      var gone = before.filter(function (p) { return used.indexOf(p) < 0; });
+      onSaved(res.content.sha);
 
-      // 3. Убираем из репозитория фото, которых больше нет ни в одном блоке
+      // 3. Убираем из репозитория фото, на которые больше никто не ссылается
       var del = Promise.resolve();
       gone.forEach(function (p) {
-        del = del.then(function () { setBusy('Убираем старые фото…'); return deleteFile(p); });
+        del = del.then(function () { setBusy('Убираем старые фото…'); return deleteFile(p, what); });
       });
       return del;
     });
     return chain;
   }
 
+  function saveWorks(out) {
+    var used = allPhotos(out);
+    return saveWithPhotos('Работы', WORKS_FILE, worksSha, out, used, savedPhotos, function (newSha) {
+      worksSha = newSha;
+      works = out;
+      savedPhotos = used;
+      setWorksDirty(false);
+      renderWorks();
+    });
+  }
+
+  function saveNews(out) {
+    var used = newsPhotos(out);
+    return saveWithPhotos('Важное', NEWS_FILE, newsSha, out, used, savedNewsPhotos, function (newSha) {
+      newsSha = newSha;
+      news = out;
+      savedNewsPhotos = used;
+      setNewsDirty(false);
+      renderNews();
+    });
+  }
+
   function save() {
     if (saving || !dirty) return;
     var c = priceDirty ? clean() : null;
     var w = worksDirty ? cleanWorks() : null;
-    var problems = (c ? c.problems : []).concat(w ? w.problems : []);
+    var n = newsDirty ? cleanNews() : null;
+    var problems = (n ? n.problems : []).concat(c ? c.problems : [], w ? w.problems : []);
     if (problems.length) {
       toast('Заполните: ' + problems[0] + (problems.length > 1 ? ' (и ещё ' + (problems.length - 1) + ')' : ''), true);
-      setView(c && c.problems.length ? 'price' : 'works');
+      setView(n && n.problems.length ? 'news' : c && c.problems.length ? 'price' : 'works');
       markEmpty();
       return;
     }
     if (LOCAL) {
       if (c) window.hbLocalSave = JSON.stringify(c.out, null, 2) + '\n';
+      if (n) window.hbLocalNews = JSON.stringify(n.out, null, 2) + '\n';
       if (w) window.hbLocalWorks = JSON.stringify(w.out, null, 2) + '\n';
       toast('Локальная проверка: ничего не отправлено', false);
       return;
@@ -444,6 +510,7 @@
     $('save').disabled = true;
     setBusy('Сохраняем…');
     var chain = Promise.resolve();
+    if (n) chain = chain.then(function () { return saveNews(n.out); });
     if (c) chain = chain.then(function () { return savePrice(c.out); });
     if (w) chain = chain.then(function () { return saveWorks(w.out); });
     chain.then(function () {
@@ -824,6 +891,136 @@
     works.blocks.forEach(function (b, bi) { box.appendChild(renderBlock(b, bi)); });
   }
 
+  /* ---------- Важное ---------- */
+
+  // Сегодня по Алматы (UTC+5) + days, как ГГГГ-ММ-ДД
+  function almatyDay(days) {
+    return new Date(Date.now() + 5 * 3600e3 + (days || 0) * 864e5).toISOString().slice(0, 10);
+  }
+
+  function newsState(n) {
+    var t = almatyDay();
+    var ru = function (d) { return d.split('-').reverse().join('.'); };
+    if (n.hidden) return { off: true, text: 'Скрыта — на сайте не видна' };
+    if (n.to && n.to < t) return { off: true, text: 'Закончилась ' + ru(n.to) };
+    if (n.from && n.from > t) return { off: true, text: 'Появится ' + ru(n.from) };
+    return { off: false, text: n.to ? 'Показ до ' + ru(n.to) + ' включительно' : 'Показ без срока' };
+  }
+
+  function changedNews() { touchNews(); renderNews(); }
+
+  // Фото может быть общим у записи и её копии
+  function dropNewsPhoto(n) {
+    var p = n.photo;
+    n.photo = '';
+    if (p && newsPhotos(news).indexOf(p) < 0) forget(p);
+  }
+
+  function newsDate(n, key, label) {
+    var input = h('input', { type: 'date', value: n[key] || '', onchange: function () { n[key] = input.value; changedNews(); } });
+    return h('label', null, label, input);
+  }
+
+  function renderNewsItem(n, i) {
+    var input = function (key, placeholder) {
+      return field(n, key, { placeholder: placeholder, touch: touchNews });
+    };
+    var state = newsState(n);
+
+    var type = h('select', { onchange: function () { n.type = type.value; changedNews(); } },
+      h('option', { value: 'promo' }, 'Акция / сет'),
+      h('option', { value: 'greet' }, 'Поздравление'),
+      h('option', { value: 'info' }, 'Важная информация'));
+    type.value = n.type;
+
+    var text = h('textarea', {
+      rows: '4',
+      placeholder: n.type === 'promo' ? 'Что входит: каждая услуга с новой строки' : 'Текст',
+      oninput: function () { n.text = text.value; touchNews(); }
+    });
+    text.value = n.text || '';
+
+    var file = h('input', {
+      type: 'file', accept: 'image/*', class: 'adm-file',
+      onchange: function () {
+        var f = file.files[0];
+        if (!f) return;
+        toast('Обрабатываем фото…');
+        prepare(f).then(function (blob) {
+          var path = NEWS_DIR + newName() + '.jpg';
+          dropNewsPhoto(n);
+          pending[path] = { blob: blob, url: URL.createObjectURL(blob), done: false };
+          n.photo = path;
+          $('toast').hidden = true;
+          changedNews();
+        }, function () { toast('Не удалось открыть фото. Подойдут JPG, PNG и WebP.', true); });
+      }
+    });
+    var photos = h('ul', { class: 'adm-photos' },
+      n.photo ? h('li', { class: 'adm-photo' },
+        h('img', { src: previewUrl(n.photo), alt: 'Фото записи' }),
+        h('div', { class: 'adm-photo-tools' },
+          iconBtn('×', 'Убрать фото', function () { dropNewsPhoto(n); changedNews(); }, 'danger'))) : null,
+      h('li', { class: 'adm-photo-add' }, h('label', null, n.photo ? 'Заменить фото' : '+ Фото', file)));
+
+    var chip = function (label, from, to) {
+      return h('button', { type: 'button', class: 'adm-add', onclick: function () { n.from = from; n.to = to; changedNews(); } }, label);
+    };
+
+    return h('div', { class: 'menu-group adm-news' + (state.off ? ' is-off' : '') },
+      h('div', { class: 'adm-group-head' },
+        field(n, 'title', { class: 'adm-field-title', placeholder: 'Заголовок, например «Сет: маникюр + педикюр»', label: 'Заголовок', required: true, touch: touchNews }),
+        h('div', { class: 'adm-ico-row' },
+          h('label', { class: 'adm-wide' },
+            h('input', { type: 'checkbox', checked: n.hidden ? null : true, onchange: function (e) { n.hidden = !e.target.checked; changedNews(); } }),
+            'Показывать'),
+          iconBtn('↑', 'Выше', function () { if (move(news.items, i, -1)) changedNews(); }),
+          iconBtn('↓', 'Ниже', function () { if (move(news.items, i, 1)) changedNews(); }),
+          iconBtn('×', 'Удалить запись', function () {
+            if (!confirm('Удалить запись «' + ((n.title || '').trim() || 'без заголовка') + '»?')) return;
+            news.items.splice(i, 1);
+            if (n.photo && newsPhotos(news).indexOf(n.photo) < 0) forget(n.photo);
+            changedNews();
+          }, 'danger'))),
+      h('p', { class: 'adm-state' + (state.off ? ' off' : ''), text: state.text }),
+      h('div', { class: 'adm-news-form' },
+        h('label', { class: 'full' }, 'Тип записи', type),
+        h('label', { class: 'full' }, 'Текст', text),
+        n.type === 'promo' ? h('label', null, 'Цена по акции', input('price', '9 900 ₸')) : null,
+        n.type === 'promo' ? h('label', null, 'Старая цена', input('old', '14 000 ₸')) : null,
+        newsDate(n, 'from', 'Показывать с'),
+        newsDate(n, 'to', 'По (включительно)'),
+        h('div', { class: 'adm-chips full' },
+          chip('Только сегодня', almatyDay(), almatyDay()),
+          chip('Завтра', almatyDay(1), almatyDay(1)),
+          chip('Неделя', almatyDay(), almatyDay(6)),
+          chip('Без срока', '', '')),
+        h('div', { class: 'full' }, photos),
+        h('div', { class: 'adm-chips full' },
+          h('button', {
+            type: 'button', class: 'adm-add',
+            onclick: function () {
+              var copy = JSON.parse(JSON.stringify(n));
+              copy.id = 'n-' + newName();
+              copy.from = copy.to = almatyDay();
+              delete copy.hidden;
+              news.items.unshift(copy);
+              changedNews();
+              $('view-news').scrollIntoView({ behavior: 'smooth' });
+              toast('Копия на сегодня добавлена сверху списка.');
+            }
+          }, 'Повторить сегодня'))));
+  }
+
+  function renderNews() {
+    var box = $('news-list');
+    box.textContent = '';
+    if (!news.items.length) {
+      box.appendChild(h('p', { class: 'adm-muted adm-empty', text: 'Пока нет записей — раздел на сайте скрыт.' }));
+    }
+    news.items.forEach(function (n, i) { box.appendChild(renderNewsItem(n, i)); });
+  }
+
   /* ---------- Старт ---------- */
 
   $('login').addEventListener('click', login);
@@ -842,6 +1039,12 @@
     renderWorks();
     var titles = document.querySelectorAll('.adm-block .adm-field-title');
     if (titles.length) titles[titles.length - 1].focus();
+  });
+  $('add-news').addEventListener('click', function () {
+    news.items.unshift({ id: 'n-' + newName(), type: 'promo', title: '', from: almatyDay(), to: almatyDay() });
+    changedNews();
+    var f = document.querySelector('.adm-news .adm-field-title');
+    if (f) f.focus();
   });
   $('add-tab').addEventListener('click', function () {
     data.tabs.push({ id: newId(), title: 'Новая категория', groups: [{ title: '', rows: [{ name: '', price: '' }] }] });

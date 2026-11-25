@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Подставляет прайс и «Наши работы» из data/*.json в index.html.
+"""Подставляет прайс, «Наши работы» и «Важное» из data/*.json в index.html.
 
-Блоки между SERVICES:START/END и WORKS:START/END в index.html — сгенерированные:
+Блоки между NEWS, SERVICES и WORKS:START/END в index.html — сгенерированные:
 править их руками бесполезно, следующий запуск перезапишет. Цены и услуги
-меняются в data/services.json, блоки с фото — в data/works.json
+меняются в data/services.json, блоки с фото — в data/works.json,
+акции и объявления — в data/news.json
 (или через админку /admin/).
 
     python3 render.py          # перезаписывает блок в index.html
@@ -17,10 +18,12 @@ import os
 import re
 import struct
 import sys
+import urllib.parse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data", "services.json")
 WORKS = os.path.join(ROOT, "data", "works.json")
+NEWS = os.path.join(ROOT, "data", "news.json")
 PAGE = os.path.join(ROOT, "index.html")
 
 BLOCK = re.compile(
@@ -29,6 +32,11 @@ BLOCK = re.compile(
 )
 WORKS_BLOCK = re.compile(
     r"(?P<head>[ \t]*<!-- WORKS:START[^\n]*-->\n)(?P<body>.*?)(?P<tail>[ \t]*<!-- WORKS:END -->)",
+    re.S,
+)
+
+NEWS_BLOCK = re.compile(
+    r"(?P<head>[ \t]*<!-- NEWS:START[^\n]*-->\n)(?P<body>.*?)(?P<tail>[ \t]*<!-- NEWS:END -->)",
     re.S,
 )
 
@@ -193,6 +201,67 @@ def render_works(data):
     return "\n".join(("      " + l) if l else "" for l in out) + "\n"
 
 
+NEWS_TYPES = {"promo": "Акция", "greet": "Поздравление", "info": "Важно"}
+WHATSAPP = "https://wa.me/77074040470"
+
+
+def news_item(item):
+    """Запись со сроком отдаём скрытой (hidden): в нужный день её открывает script.js."""
+    title = item["title"].strip()
+    kind = item.get("type") if item.get("type") in NEWS_TYPES else "info"
+    start, end = item.get("from") or "", item.get("to") or ""
+    dates = "".join(
+        ' data-%s="%s"' % (k, attr(v)) for k, v in (("from", start), ("to", end)) if v
+    )
+    out = ['<article class="news-card is-%s"%s%s>' % (kind, dates, " hidden" if dates else "")]
+    photo = item.get("photo")
+    if photo:
+        size = image_size(photo)
+        wh = ' width="%d" height="%d"' % size if size else ""
+        out.append('  <img class="news-photo" src="%s" alt=""%s loading="lazy" decoding="async">' % (attr(photo), wh))
+    out.append('  <div class="news-body">')
+    out.append('    <p class="news-tag">%s<span class="news-term"></span></p>' % NEWS_TYPES[kind])
+    out.append("    <h3>%s</h3>" % esc(title))
+    lines = [l.strip() for l in (item.get("text") or "").split("\n") if l.strip()]
+    if lines:
+        out.append('    <p class="news-text">%s</p>' % "<br>".join(esc(l) for l in lines))
+    price, old = (item.get("price") or "").strip(), (item.get("old") or "").strip()
+    if kind == "promo" and price:
+        was = ' <s aria-label="Старая цена">%s</s>' % esc(old) if old else ""
+        out.append('    <p class="news-price"><b>%s</b>%s</p>' % (esc(price), was))
+    if kind == "promo":
+        msg = urllib.parse.quote("Здравствуйте! Хочу записаться по акции «%s»" % title)
+        out.append(
+            '    <a class="btn btn-primary" href="%s?text=%s" target="_blank" rel="noopener">Записаться</a>'
+            % (WHATSAPP, msg)
+        )
+    out.append("  </div>")
+    out.append("</article>")
+    return out
+
+
+def render_news(data):
+    """Секция скрыта, пока script.js не найдёт в ней хотя бы одну действующую запись."""
+    shown = [i for i in data.get("items", []) if not i.get("hidden") and i.get("title", "").strip()]
+    if not shown:
+        return ""
+    out = [
+        '<section id="news" class="news" hidden>',
+        '  <div class="wrap">',
+        '    <div class="sec-head reveal">',
+        "      <div>",
+        '        <p class="eyebrow">Важное</p>',
+        "        <h2>Акции и новости</h2>",
+        "      </div>",
+        "    </div>",
+        '    <div class="news-grid reveal">',
+    ]
+    for i in shown:
+        out += ["      " + line for line in news_item(i)]
+    out += ["    </div>", "  </div>", "</section>"]
+    return "\n".join("  " + l for l in out) + "\n"
+
+
 def read_json(path, default=None):
     if default is not None and not os.path.exists(path):
         return default
@@ -203,12 +272,14 @@ def read_json(path, default=None):
 def main():
     services = read_json(DATA)
     works = read_json(WORKS, {"blocks": []})
+    news = read_json(NEWS, {"items": []})
     with io.open(PAGE, encoding="utf-8") as f:
         page = f.read()
     new = page
     for pattern, body, name in (
         (BLOCK, render(services), "SERVICES"),
         (WORKS_BLOCK, render_works(works), "WORKS"),
+        (NEWS_BLOCK, render_news(news), "NEWS"),
     ):
         m = pattern.search(new)
         if not m:
